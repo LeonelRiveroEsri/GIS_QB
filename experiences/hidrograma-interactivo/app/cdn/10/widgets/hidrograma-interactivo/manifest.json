@@ -1,0 +1,21 @@
+{
+  "name": "hidrograma-interactivo",
+  "label": "Hidrograma Interactivo",
+  "type": "widget",
+  "version": "1.0.0",
+  "exbVersion": "1.14.0",
+  "author": "Leonel Rivero",
+  "description": "Widget de filtros de hidrograma con datos simulados.",
+  "copyright": "",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "translatedLocales": [
+    "en"
+  ],
+  "defaultSize": {
+    "width": 1200,
+    "height": 700
+  },
+  "supportDataSource": false,
+  "supportInlineEditing": false,
+  "properties": {}
+}

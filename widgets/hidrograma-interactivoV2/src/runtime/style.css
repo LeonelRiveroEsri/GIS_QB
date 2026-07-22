@@ -1,0 +1,5 @@
+@keyframes hidroSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

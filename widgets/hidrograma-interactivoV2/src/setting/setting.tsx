@@ -1,0 +1,26 @@
+import { React } from 'jimu-core'
+import { type AllWidgetSettingProps } from 'jimu-for-builder'
+import { MapWidgetSelector } from 'jimu-ui/advanced/setting-components'
+import type { IMConfig } from '../config'
+
+const Setting = (props: AllWidgetSettingProps<IMConfig>) => {
+  const onMapWidgetSelected = (useMapWidgetIds: string[]) => {
+    props.onSettingChange({
+      id: props.id,
+      useMapWidgetIds
+    })
+  }
+
+  return (
+    <div style={{ padding: 16 }}>
+      <h4>Configuración Hidrograma V2</h4>
+
+      <MapWidgetSelector
+        useMapWidgetIds={props.useMapWidgetIds}
+        onSelect={onMapWidgetSelected}
+      />
+    </div>
+  )
+}
+
+export default Setting
