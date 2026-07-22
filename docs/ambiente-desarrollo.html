@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GIS_QB — Ambiente colaborativo de Experience Builder</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #06184a;
+      --blue: #0969da;
+      --blue-soft: #eaf3ff;
+      --ink: #172033;
+      --muted: #5d687a;
+      --line: #d9e1ec;
+      --paper: #ffffff;
+      --page: #f4f7fb;
+      --ok: #117a4b;
+      --warn: #9a6700;
+      --danger: #b42318;
+      --code: #0d172a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font: 16px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      padding: 48px 24px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--navy), #0b4da2);
+    }
+
+    header > div, main { max-width: 1050px; margin: auto; }
+    h1 { margin: 0 0 12px; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1.08; }
+    header p { max-width: 760px; margin: 0; color: #dce9ff; font-size: 1.1rem; }
+    main { padding: 30px 20px 70px; }
+
+    nav, section {
+      margin-bottom: 24px;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--paper);
+      box-shadow: 0 6px 24px rgba(25, 48, 82, .06);
+    }
+
+    nav ul { columns: 2; padding-left: 22px; }
+    nav a { color: var(--blue); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    h2 { margin-top: 0; color: var(--navy); line-height: 1.2; }
+    h3 { margin-top: 28px; line-height: 1.25; }
+    code { font-family: Consolas, "Cascadia Code", monospace; }
+
+    pre {
+      position: relative;
+      overflow-x: auto;
+      padding: 18px;
+      border-radius: 10px;
+      color: #e6edf7;
+      background: var(--code);
+      font: 14px/1.55 Consolas, "Cascadia Code", monospace;
+      white-space: pre;
+    }
+
+    .callout {
+      margin: 18px 0;
+      padding: 15px 18px;
+      border-left: 5px solid var(--blue);
+      border-radius: 8px;
+      background: var(--blue-soft);
+    }
+
+    .warning { border-color: var(--warn); background: #fff8df; }
+    .danger { border-color: var(--danger); background: #fff1f0; }
+    .success { border-color: var(--ok); background: #edfbf4; }
+
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { padding: 11px 12px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--navy); background: #eef3fa; }
+    .flow { display: grid; gap: 10px; margin: 20px 0; }
+    .flow div { padding: 13px 16px; border: 1px solid var(--line); border-radius: 9px; background: #fafcff; }
+    .flow div:not(:last-child)::after { content: "↓"; display: block; margin: 12px 0 -25px; color: var(--blue); font-weight: 800; }
+    .checklist { list-style: none; padding: 0; }
+    .checklist li { margin: 8px 0; }
+    .checklist li::before { content: "□"; margin-right: 10px; color: var(--blue); font-weight: 800; }
+    footer { padding: 30px; color: var(--muted); text-align: center; }
+
+    @media (max-width: 700px) {
+      nav ul { columns: 1; }
+      nav, section { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Ambiente colaborativo GIS_QB</h1>
+      <p>Guía de inicio desde cero para editar widgets de ArcGIS Experience Builder, reconstruir las Experiences y publicar versiones consistentes en Git.</p>
+    </div>
+  </header>
+
+  <main>
+    <nav aria-label="Contenido">
+      <h2>Contenido</h2>
+      <ul>
+        <li><a href="#modelo">Qué contiene el repositorio</a></li>
+        <li><a href="#requisitos">Requisitos</a></li>
+        <li><a href="#instalacion">Instalación desde cero</a></li>
+        <li><a href="#widgets">Instalar los widgets</a></li>
+        <li><a href="#experiences">Importar las Experiences</a></li>
+        <li><a href="#desarrollo">Editar y probar</a></li>
+        <li><a href="#publicacion">Exportar y sincronizar</a></li>
+        <li><a href="#git">Commit y push</a></li>
+        <li><a href="#produccion">Ver el build de producción</a></li>
+        <li><a href="#colaboracion">Trabajo por roles</a></li>
+        <li><a href="#problemas">Problemas frecuentes</a></li>
+      </ul>
+    </nav>
+
+    <section id="modelo">
+      <h2>1. Qué contiene el repositorio</h2>
+      <table>
+        <thead><tr><th>Ruta</th><th>Propósito</th><th>Editable</th></tr></thead>
+        <tbody>
+          <tr><td><code>widgets/hidrograma-interactivo</code></td><td>Código fuente del widget original.</td><td>Sí</td></tr>
+          <tr><td><code>widgets/hidrograma-interactivoV2</code></td><td>Código fuente del widget V2. En Experience Builder se instala como <code>hidrogramaV2</code>.</td><td>Sí</td></tr>
+          <tr><td><code>experiences/*/app</code></td><td>Build completo para publicar en un servidor web.</td><td>No es la fuente principal</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout warning">
+        <strong>Importante:</strong> Git no incluye el motor completo de Experience Builder. Cada developer debe descargar e instalar la misma versión de Developer Edition. El repositorio conserva el código propio y los builds publicables, no <code>node_modules</code> ni toda la distribución de Esri.
+      </div>
+
+      <div class="flow" aria-label="Flujo general">
+        <div>Clonar GIS_QB</div>
+        <div>Instalar Experience Builder Developer Edition</div>
+        <div>Copiar widgets e importar Experiences</div>
+        <div>Editar y probar en Builder</div>
+        <div>Exportar, sincronizar, revisar y hacer push</div>
+      </div>
+    </section>
+
+    <section id="requisitos">
+      <h2>2. Requisitos</h2>
+      <ul>
+        <li>Windows con Git.</li>
+        <li>Acceso al repositorio <code>LeonelRiveroEsri/GIS_QB</code>.</li>
+        <li>ArcGIS Experience Builder Developer Edition en la misma versión usada por el equipo.</li>
+        <li>Node.js y npm compatibles con esa versión de Experience Builder.</li>
+        <li>Cuenta y Client ID del mismo portal de ArcGIS Online o Enterprise.</li>
+        <li>Python 3 para ejecutar la sincronización.</li>
+      </ul>
+
+      <div class="callout danger">
+        Nunca guardar tokens, contraseñas, secretos OAuth ni archivos de sesión dentro de Git. El Client ID puede configurarse localmente, pero las credenciales personales no se versionan.
+      </div>
+    </section>
+
+    <section id="instalacion">
+      <h2>3. Instalación desde cero</h2>
+      <h3>3.1 Clonar GIS_QB</h3>
+      <pre><code>$gitRoot = "$env:USERPROFILE\Documents\GitHub"
+New-Item -ItemType Directory -Path $gitRoot -Force
+git clone https://github.com/LeonelRiveroEsri/GIS_QB.git "$gitRoot\GIS_QB"
+$repo = "$gitRoot\GIS_QB"
+git -C $repo status</code></pre>
+
+      <h3>3.2 Instalar Experience Builder</h3>
+      <p>Descargar la versión acordada por el equipo, descomprimirla en una ruta local y definirla:</p>
+      <pre><code>$exb = "D:\EXB_DEV"
+
+cd "$exb\server"
+npm ci
+
+cd "$exb\client"
+npm ci</code></pre>
+
+      <p>Comprobar que Node y npm pertenecen al mismo ambiente:</p>
+      <pre><code>where.exe node
+where.exe npm
+node --version
+npm --version</code></pre>
+
+      <div class="callout warning">
+        Si <code>node</code> y <code>npm</code> apuntan a instalaciones incompatibles, la exportación puede fallar. Corregir el <code>PATH</code> antes de continuar.
+      </div>
+    </section>
+
+    <section id="widgets">
+      <h2>4. Instalar los widgets desde Git</h2>
+      <p>Detener el cliente de Experience Builder antes de agregar o renombrar carpetas.</p>
+      <pre><code>$repo = "$env:USERPROFILE\Documents\GitHub\GIS_QB"
+$exb = "D:\EXB_DEV"
+
+Copy-Item -Recurse -Force `
+  "$repo\widgets\hidrograma-interactivo" `
+  "$exb\client\your-extensions\widgets\hidrograma-interactivo"
+
+Copy-Item -Recurse -Force `
+  "$repo\widgets\hidrograma-interactivoV2" `
+  "$exb\client\your-extensions\widgets\hidrogramaV2"</code></pre>
+
+      <div class="callout">
+        El mapeo V2 es intencional: la carpeta del repositorio es <code>hidrograma-interactivoV2</code>, pero el manifest y la Experience usan el nombre interno <code>hidrogramaV2</code>.
+      </div>
+    </section>
+
+    <section id="experiences">
+      <h2>5. Importar las Experiences</h2>
+      <p>Experience Builder importa un ZIP cuyo <code>index.html</code> está directamente en la raíz. Crear paquetes temporales a partir del build versionado:</p>
+      <pre><code>$repo = "$env:USERPROFILE\Documents\GitHub\GIS_QB"
+$imports = "$env:TEMP\GIS_QB_imports"
+New-Item -ItemType Directory -Path $imports -Force
+
+Compress-Archive `
+  -Path "$repo\experiences\hidrograma-interactivo\app\*" `
+  -DestinationPath "$imports\Hidrograma Interactivo.zip" `
+  -Force
+
+Compress-Archive `
+  -Path "$repo\experiences\hidrograma-interactivoV2\app\*" `
+  -DestinationPath "$imports\Hidrograma Interactivo V2.zip" `
+  -Force</code></pre>
+
+      <p>Luego:</p>
+      <ol>
+        <li>Iniciar <code>server</code> y <code>client</code>.</li>
+        <li>Abrir <code>https://localhost:3001/</code>.</li>
+        <li>Ingresar al mismo portal usado por el equipo.</li>
+        <li>Elegir <strong>Experience → Import → Import from my computer</strong>.</li>
+        <li>Importar ambos ZIP y guardar las Experiences.</li>
+      </ol>
+
+      <div class="callout warning">
+        Los IDs locales pueden cambiar. En una máquina pueden ser <code>0</code> y <code>1</code>, y en otra <code>4</code> y <code>5</code>. Nunca suponer el ID sin revisar <code>server/public/apps</code>.
+      </div>
+    </section>
+
+    <section id="desarrollo">
+      <h2>6. Ejecutar, editar y probar</h2>
+      <p>Terminal del servidor:</p>
+      <pre><code>cd D:\EXB_DEV\server
+npm start</code></pre>
+
+      <p>Terminal del cliente:</p>
+      <pre><code>cd D:\EXB_DEV\client
+npm start</code></pre>
+
+      <p>Editar los widgets en:</p>
+      <pre><code>D:\EXB_DEV\client\your-extensions\widgets\hidrograma-interactivo
+D:\EXB_DEV\client\your-extensions\widgets\hidrogramaV2</code></pre>
+
+      <p>Antes de exportar:</p>
+      <ul class="checklist">
+        <li>La Experience abre sin errores.</li>
+        <li>El widget muestra el cambio esperado.</li>
+        <li>Filtros, mapas y exportaciones funcionan.</li>
+        <li>No hay referencias al widget de perfiles.</li>
+        <li>La Experience fue guardada en Builder.</li>
+      </ul>
+    </section>
+
+    <section id="publicacion">
+      <h2>7. Exportar y sincronizar</h2>
+      <p>Descargar desde Experience Builder las dos aplicaciones actualizadas y conservar estos nombres:</p>
+      <pre><code>D:\EXB_DEV\exports\Hidrograma Interactivo.zip
+D:\EXB_DEV\exports\Hidrograma Interactivo V2.zip</code></pre>
+
+      <p>Ejecutar primero una simulación:</p>
+      <pre><code>python D:\EXB_DEV\sync_repository.py `
+  --project-root "D:\EXB_DEV" `
+  --repository-root "$env:USERPROFILE\Documents\GitHub\GIS_QB" `
+  --skip-export `
+  --dry-run</code></pre>
+
+      <p>Si la validación es correcta:</p>
+      <pre><code>python D:\EXB_DEV\sync_repository.py `
+  --project-root "D:\EXB_DEV" `
+  --repository-root "$env:USERPROFILE\Documents\GitHub\GIS_QB" `
+  --skip-export</code></pre>
+
+      <h3>7.1 Alternativa inicial si todavía no se instaló el script</h3>
+      <p>El developer puede expandir cada ZIP en una carpeta temporal, comprobar su raíz y reemplazar únicamente el destino correspondiente:</p>
+      <pre><code>$repo = "$env:USERPROFILE\Documents\GitHub\GIS_QB"
+$zip = "D:\EXB_DEV\exports\Hidrograma Interactivo V2.zip"
+$stage = "$env:TEMP\GIS_QB_stage_v2"
+$destination = "$repo\experiences\hidrograma-interactivoV2\app"
+
+# Confirmar que el destino está dentro del clon antes de eliminarlo.
+$repoFull = [IO.Path]::GetFullPath($repo)
+$destinationFull = [IO.Path]::GetFullPath($destination)
+if (-not $destinationFull.StartsWith($repoFull, [StringComparison]::OrdinalIgnoreCase)) {
+  throw "Destino fuera del repositorio: $destinationFull"
+}
+
+if (Test-Path -LiteralPath $stage) {
+  Remove-Item -LiteralPath $stage -Recurse -Force
+}
+Expand-Archive -LiteralPath $zip -DestinationPath $stage
+
+if (-not (Test-Path -LiteralPath "$stage\index.html")) {
+  throw "El ZIP no contiene index.html directamente en la raíz"
+}
+
+if (Test-Path -LiteralPath $destination) {
+  Remove-Item -LiteralPath $destination -Recurse -Force
+}
+Copy-Item -LiteralPath $stage -Destination $destination -Recurse</code></pre>
+
+      <p>Repetir con la Experience original, cambiando ZIP y destino. Para los widgets, copiar desde el ambiente de Builder al clon con el mapeo inverso:</p>
+      <pre><code>Copy-Item -Recurse -Force `
+  "D:\EXB_DEV\client\your-extensions\widgets\hidrogramaV2\*" `
+  "$repo\widgets\hidrograma-interactivoV2"</code></pre>
+
+      <div class="callout success">
+        El resultado correcto actualiza el código fuente de ambos widgets y deja <code>index.html</code> directamente dentro de cada carpeta <code>experiences/*/app</code>.
+      </div>
+    </section>
+
+    <section id="git">
+      <h2>8. Commit, revisión y push</h2>
+      <h3>8.1 Crear una rama</h3>
+      <pre><code>$repo = "$env:USERPROFILE\Documents\GitHub\GIS_QB"
+git -C $repo switch main
+git -C $repo pull --ff-only
+git -C $repo switch -c feature/descripcion-corta</code></pre>
+
+      <h3>8.2 Revisar</h3>
+      <pre><code>git -C $repo status
+git -C $repo diff --stat
+git -C $repo diff -- widgets</code></pre>
+
+      <h3>8.3 Preparar únicamente el alcance autorizado</h3>
+      <pre><code>git -C $repo add -- `
+  widgets/hidrograma-interactivo `
+  widgets/hidrograma-interactivoV2 `
+  experiences/hidrograma-interactivo/app `
+  experiences/hidrograma-interactivoV2/app
+
+git -C $repo diff --cached --stat</code></pre>
+
+      <h3>8.4 Commit y push</h3>
+      <pre><code>git -C $repo commit -m "Describe el cambio"
+git -C $repo push -u origin feature/descripcion-corta</code></pre>
+
+      <p>Abrir un Pull Request hacia <code>main</code>. Para trabajo colaborativo, evitar pushes directos a <code>main</code>.</p>
+    </section>
+
+    <section id="produccion">
+      <h2>9. Ver localmente la Experience de producción</h2>
+      <p>No abrir <code>index.html</code> mediante <code>file://</code>. Servir la carpeta con HTTP:</p>
+      <pre><code>cd "$env:USERPROFILE\Documents\GitHub\GIS_QB\experiences\hidrograma-interactivoV2\app"
+python -m http.server 8080</code></pre>
+
+      <p>Abrir <code>http://localhost:8080/</code>.</p>
+      <div class="callout warning">
+        Experience Builder usa service workers. Si aparece una versión anterior, cerrar las pestañas, borrar los datos del sitio o probar en una ventana privada. Cada exportación puede incrementar la carpeta interna <code>cdn/N</code>; esto es normal y evita caché obsoleta.
+      </div>
+    </section>
+
+    <section id="colaboracion">
+      <h2>10. Trabajo por roles</h2>
+      <table>
+        <thead><tr><th>Rol</th><th>Entrega</th><th>Responsabilidad</th></tr></thead>
+        <tbody>
+          <tr><td>Developer</td><td><code>widgets/**</code></td><td>Implementar y probar el código fuente del widget.</td></tr>
+          <tr><td>Analista GIS</td><td><code>experiences/**/app</code></td><td>Integrar el widget, configurar la Experience, probar y exportar.</td></tr>
+          <tr><td>Revisor</td><td>Pull Request</td><td>Confirmar que widget fuente y Experience compilada son consistentes.</td></tr>
+        </tbody>
+      </table>
+
+      <p>Una rama puede recibir dos commits:</p>
+      <pre><code>1. Improve Hidrograma V2 widget
+2. Rebuild Hidrograma V2 experience</code></pre>
+
+      <div class="callout">
+        El código nuevo del widget no entra automáticamente en un build ya exportado. Alguien debe compilar y volver a descargar la Experience. <code>main</code> debería recibir el widget y su Experience reconstruida como una unidad coherente.
+      </div>
+    </section>
+
+    <section id="problemas">
+      <h2>11. Problemas frecuentes</h2>
+      <table>
+        <thead><tr><th>Síntoma</th><th>Acción</th></tr></thead>
+        <tbody>
+          <tr><td>El widget no aparece en Builder.</td><td>Confirmar la carpeta y el <code>manifest.json</code>; reiniciar <code>npm start</code> del cliente.</td></tr>
+          <tr><td>npm informa una versión distinta de Node.</td><td>Ejecutar <code>where node</code> y <code>where npm</code>; corregir el <code>PATH</code>.</td></tr>
+          <tr><td>La Experience sigue mostrando el texto anterior.</td><td>Guardar, recompilar, exportar nuevamente y limpiar la caché/service worker.</td></tr>
+          <tr><td>La importación falla.</td><td>Verificar misma versión de Experience Builder, mismo portal y <code>index.html</code> en la raíz del ZIP.</td></tr>
+          <tr><td>Git muestra muchos renombrados <code>cdn/6 → cdn/8</code>.</td><td>Es esperado cuando cambia el número de build. Revisar que <code>index.html</code> apunte al nuevo directorio.</td></tr>
+          <tr><td>La Experience contiene perfiles.</td><td>No publicar. Corregir la Experience editable y exportarla nuevamente.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>12. Lista final antes del Pull Request</h2>
+      <ul class="checklist">
+        <li>La rama parte de la última versión de <code>main</code>.</li>
+        <li>Los widgets fuente contienen los cambios.</li>
+        <li>Las Experiences fueron guardadas y exportadas nuevamente.</li>
+        <li>El texto o función nueva existe en el bundle compilado.</li>
+        <li>No hay secretos ni archivos temporales.</li>
+        <li>No hay widgets de perfiles ni recursos de otros clientes.</li>
+        <li>La Experience de producción abre mediante HTTP.</li>
+        <li>El Pull Request explica el cambio y las pruebas realizadas.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>GIS_QB · Guía de ambiente colaborativo para ArcGIS Experience Builder Developer Edition</footer>
+</body>
+</html>
