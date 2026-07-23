@@ -189,7 +189,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
         <PanelConTarjetas>
           <Collapsible
             open={panelOpen}
-            title="Hidrograma-Tool (Prueba GIT)"
+            title="Hidrograma-Tool"
             onToggle={() => setPanelOpen((prev) => !prev)}
           >
             <div style={{ padding: 12 }}>

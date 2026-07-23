@@ -409,7 +409,14 @@
   "dialogs": {},
   "messageConfigs": {},
   "attributes": {
-    "portalUrl": "https://Teck-QB2.maps.arcgis.com"
+    "portalUrl": "https://Teck-QB2.maps.arcgis.com",
+    "isWebTier": false,
+    "clientId": "",
+    "title": "hidrograma-interactivoV2",
+    "description": null,
+    "type": "Web Experience",
+    "thumbnail": null,
+    "express": false
   },
   "timestamp": 1777488032447,
   "sharedThemeVariables": {
@@ -451,5 +458,6 @@
     },
     "backgroundColor": "var(--mixin-shared-theme-header-bg)",
     "textColor": "#ffffff"
-  }
+  },
+  "publishTimestamp": 1784814227033
 }
