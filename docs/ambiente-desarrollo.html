@@ -382,21 +382,42 @@ D:\EXP_GIT\client\your-extensions\widgets\hidrogramaV2</code></pre>
       <h2>7. Exportar y sincronizar</h2>
       <p>Primero guardar los cambios de las Experiences en la interfaz. Después identificar sus IDs locales:</p>
       <pre><code>dir /b /ad "D:\EXP_GIT\server\public\apps"
-type "D:\EXP_GIT\server\public\apps\2\info.json"
-type "D:\EXP_GIT\server\public\apps\3\info.json"</code></pre>
-      <p>En el ambiente validado, el ID <code>2</code> corresponde a Hidrograma Interactivo y el ID <code>3</code> a Hidrograma Interactivo V2. Los IDs son locales y pueden cambiar en otro equipo.</p>
+      <p>Revisar el <code>info.json</code> de cada ID mostrado hasta encontrar el título correcto:</p>
+      <pre><code>type "D:\EXP_GIT\server\public\apps\0\info.json"
+type "D:\EXP_GIT\server\public\apps\1\info.json"</code></pre>
+      <p>Los IDs son locales y pueden cambiar en cada equipo. En la instalación nueva validada, el ID <code>1</code> corresponde a Hidrograma Interactivo V2.</p>
 
-      <h3>7.1 Generar los paquetes importables desde CMD</h3>
+      <h3>7.1 Generar un paquete con Client ID</h3>
+      <p>El Client ID validado para las aplicaciones desplegadas de este proyecto es <code>BtJfYNpED0l11nil</code>. Es un identificador público, no una contraseña. El tercer argumento de <code>zipApp</code> es obligatorio en el flujo del equipo; si se omite, el build queda con <code>"clientId": ""</code> y cambia el inicio de sesión.</p>
       <pre><code>if not exist "D:\EXP_GIT\GIS_QB\experiences\packages" mkdir "D:\EXP_GIT\GIS_QB\experiences\packages"
 cd /d D:\EXP_GIT
 
-set NODE_ENV=production&amp;&amp; node -e "require('./server/src/middlewares/dev/apps/app-download.js').zipApp('2', 'D:/EXP_GIT/GIS_QB/experiences/packages/hidrograma-interactivo.zip')"
+set NODE_ENV=production&amp;&amp; node -e "require('./server/src/middlewares/dev/apps/app-download.js').zipApp('1', 'D:/EXP_GIT/GIS_QB/experiences/packages/hidrograma-interactivoV2-new.zip', 'BtJfYNpED0l11nil')"</code></pre>
 
-set NODE_ENV=production&amp;&amp; node -e "require('./server/src/middlewares/dev/apps/app-download.js').zipApp('3', 'D:/EXP_GIT/GIS_QB/experiences/packages/hidrograma-interactivoV2.zip')"</code></pre>
+      <div class="callout warning">
+        <code>zipApp</code> no sobrescribe un archivo existente. Generar primero un nombre temporal como <code>*-new.zip</code>; reemplazar el ZIP oficial únicamente después de validarlo.
+      </div>
 
-      <h3>7.2 Comprobar el resultado</h3>
-      <pre><code>dir "D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivo.zip"
-dir "D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2.zip"</code></pre>
+      <h3>7.2 Extraer y validar antes de reemplazar</h3>
+      <pre><code>if exist "D:\EXP_GIT\_stage_hidrogramaV2" (echo EXISTE) else (echo NO_EXISTE)
+
+powershell -NoProfile -Command "Expand-Archive -LiteralPath 'D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2-new.zip' -DestinationPath 'D:\EXP_GIT\_stage_hidrogramaV2'"
+
+dir /b /ad "D:\EXP_GIT\_stage_hidrogramaV2\cdn"</code></pre>
+      <p>Usar el número devuelto por el último comando para revisar el archivo, por ejemplo <code>cdn\2\config.json</code>:</p>
+      <pre><code>findstr /I /C:"clientId" "D:\EXP_GIT\_stage_hidrogramaV2\cdn\2\config.json"
+findstr /I /C:"cdn/2" "D:\EXP_GIT\_stage_hidrogramaV2\index.html"</code></pre>
+      <p>Resultados esperados: <code>"clientId": "BtJfYNpED0l11nil"</code> y una referencia de <code>index.html</code> al mismo número de CDN.</p>
+
+      <h3>7.3 Reemplazar paquete y build de producción</h3>
+      <pre><code>move /Y "D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2-new.zip" "D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2.zip"
+
+robocopy "D:\EXP_GIT\_stage_hidrogramaV2" "D:\EXP_GIT\GIS_QB\experiences\hidrograma-interactivoV2\app" /MIR /R:2 /W:1</code></pre>
+      <p>Probar el build por HTTP antes de eliminar la carpeta temporal. Los códigos de salida de <code>robocopy</code> entre 0 y 7 se consideran correctos.</p>
+
+      <h3>7.4 Limpiar después de validar</h3>
+      <pre><code>rmdir /S /Q "D:\EXP_GIT\_stage_hidrogramaV2"</code></pre>
+      <p>Para la Experience original, repetir el mismo procedimiento usando su ID local y las rutas <code>hidrograma-interactivo</code>.</p>
 
       <p>No se requiere <code>xcopy</code> para sincronizar los widgets: las rutas de <code>your-extensions/widgets</code> apuntan directamente al clon mediante las uniones creadas en la sección 4.</p>
 
@@ -422,6 +443,7 @@ git diff -- widgets</code></pre>
       <p>Para entregar widgets y paquetes editables:</p>
       <pre><code>git add -- "widgets/hidrograma-interactivo" "widgets/hidrograma-interactivoV2"
 git add -- "experiences/packages/hidrograma-interactivo.zip" "experiences/packages/hidrograma-interactivoV2.zip"
+git add -- "experiences/hidrograma-interactivo/app" "experiences/hidrograma-interactivoV2/app"
 git diff --cached --stat</code></pre>
 
       <h3>8.4 Commit y push</h3>
@@ -436,7 +458,7 @@ git status -sb</code></pre>
       <h2>9. Ver localmente la Experience de producción</h2>
       <p>No abrir <code>index.html</code> mediante <code>file://</code>. Servir la carpeta con HTTP:</p>
       <pre><code>cd /d "D:\EXP_GIT\GIS_QB\experiences\hidrograma-interactivoV2\app"
-python -m http.server 8080</code></pre>
+"D:\Env\arcgis-pro\python.exe" -m http.server 8080</code></pre>
 
       <p>Abrir <code>http://localhost:8080/</code>.</p>
       <div class="callout warning">
@@ -474,6 +496,7 @@ python -m http.server 8080</code></pre>
           <tr><td>npm informa una versión distinta de Node.</td><td>Ejecutar <code>where node</code> y <code>where npm</code>; corregir el <code>PATH</code>.</td></tr>
           <tr><td>La Experience sigue mostrando el texto anterior.</td><td>Guardar, recompilar, exportar nuevamente y limpiar la caché/service worker.</td></tr>
           <tr><td>La importación devuelve <code>Invalid App</code> y <code>appVersion: null</code>.</td><td>No recomprimir carpetas manualmente. Importar el ZIP original de <strong>Download</strong> o regenerarlo con <code>zipApp</code>.</td></tr>
+          <tr><td>El inicio de sesión del build descargado se comporta diferente.</td><td>Revisar <code>cdn/N/config.json</code>. Si <code>clientId</code> está vacío, regenerar con el tercer argumento de <code>zipApp</code>: <code>BtJfYNpED0l11nil</code>.</td></tr>
           <tr><td>La importación falla por versión o widgets.</td><td>Verificar la misma versión de Experience Builder, el mismo portal y versiones compatibles de los widgets.</td></tr>
           <tr><td>Git muestra muchos renombrados <code>cdn/6 → cdn/8</code>.</td><td>Es esperado cuando cambia el número de build. Revisar que <code>index.html</code> apunte al nuevo directorio.</td></tr>
           <tr><td>La Experience contiene perfiles.</td><td>No publicar. Corregir la Experience editable y exportarla nuevamente.</td></tr>
