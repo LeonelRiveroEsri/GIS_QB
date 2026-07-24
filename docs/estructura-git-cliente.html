@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GIS_QB — Estructura Git propuesta</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #071b4b;
+      --navy-2: #0b3678;
+      --blue: #0875d1;
+      --cyan: #31b7c5;
+      --ink: #182238;
+      --muted: #647086;
+      --line: #d9e2ef;
+      --page: #f4f7fb;
+      --paper: #fff;
+      --soft: #edf6ff;
+      --success: #15734d;
+      --success-soft: #eaf8f1;
+      --warning: #946200;
+      --warning-soft: #fff7df;
+      --code: #0d172a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font: 16px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      padding: 56px 24px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 88% 18%, rgba(49, 183, 197, .32), transparent 25%),
+        linear-gradient(135deg, var(--navy), var(--navy-2));
+    }
+
+    header > div,
+    main {
+      width: min(1080px, calc(100% - 36px));
+      margin: auto;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #9de9ef;
+      font-size: .82rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 780px;
+      margin: 0 0 14px;
+      font-size: clamp(2.25rem, 6vw, 4rem);
+      line-height: 1.06;
+    }
+
+    header p {
+      max-width: 780px;
+      margin: 0;
+      color: #dce9ff;
+      font-size: 1.12rem;
+    }
+
+    main { padding: 30px 0 70px; }
+
+    nav,
+    section {
+      margin-bottom: 24px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--paper);
+      box-shadow: 0 8px 28px rgba(23, 46, 83, .06);
+    }
+
+    nav ul {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px 22px;
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    nav a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+
+    nav a:hover { text-decoration: underline; }
+
+    h2 {
+      margin: 0 0 16px;
+      color: var(--navy);
+      font-size: 1.65rem;
+      line-height: 1.2;
+    }
+
+    h3 {
+      margin: 26px 0 10px;
+      color: var(--navy-2);
+      line-height: 1.25;
+    }
+
+    code {
+      font-family: Consolas, "Cascadia Code", monospace;
+      font-size: .92em;
+    }
+
+    pre {
+      overflow-x: auto;
+      margin: 18px 0;
+      padding: 20px;
+      border-radius: 12px;
+      color: #e6edf7;
+      background: var(--code);
+      font: 14px/1.65 Consolas, "Cascadia Code", monospace;
+    }
+
+    table {
+      width: 100%;
+      margin: 18px 0;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--navy);
+      background: #edf3fb;
+    }
+
+    .lead {
+      color: #344159;
+      font-size: 1.08rem;
+    }
+
+    .callout {
+      margin: 18px 0;
+      padding: 16px 18px;
+      border-left: 5px solid var(--blue);
+      border-radius: 9px;
+      background: var(--soft);
+    }
+
+    .success {
+      border-color: var(--success);
+      background: var(--success-soft);
+    }
+
+    .warning {
+      border-color: var(--warning);
+      background: var(--warning-soft);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin: 22px 0;
+    }
+
+    .card {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fbfdff;
+    }
+
+    .card .number {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      margin-bottom: 12px;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--blue);
+      place-items: center;
+      font-weight: 800;
+    }
+
+    .card h3 { margin: 0 0 8px; }
+    .card p { margin: 0; color: var(--muted); }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      margin: 30px 0 10px;
+      counter-reset: step;
+    }
+
+    .stepper div {
+      position: relative;
+      min-width: 0;
+      padding: 54px 10px 8px;
+      color: var(--navy);
+      text-align: center;
+      line-height: 1.35;
+      counter-increment: step;
+    }
+
+    .stepper div::before {
+      content: counter(step);
+      position: absolute;
+      z-index: 2;
+      top: 0;
+      left: 50%;
+      display: grid;
+      width: 40px;
+      height: 40px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 0 0 0 2px var(--blue);
+      place-items: center;
+      font-weight: 800;
+      transform: translateX(-50%);
+    }
+
+    .stepper div:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 19px;
+      left: calc(50% + 24px);
+      width: calc(100% - 48px);
+      height: 3px;
+      background: #acd0f2;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      padding: 2px 9px;
+      border-radius: 999px;
+      color: #0b4d82;
+      background: #e5f3ff;
+      font-size: .84rem;
+      font-weight: 700;
+    }
+
+    .checks {
+      margin: 12px 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .checks li { margin: 8px 0; }
+    .checks li::before {
+      content: "✓";
+      margin-right: 10px;
+      color: var(--success);
+      font-weight: 900;
+    }
+
+    footer {
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 820px) {
+      nav ul,
+      .cards { grid-template-columns: 1fr; }
+
+      .stepper {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .stepper div {
+        min-height: 60px;
+        padding: 9px 10px 9px 66px;
+        text-align: left;
+      }
+
+      .stepper div::before {
+        top: 8px;
+        left: 20px;
+        transform: none;
+      }
+
+      .stepper div:not(:last-child)::after {
+        top: 49px;
+        left: 39px;
+        width: 3px;
+        height: 28px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      header { padding: 42px 18px; }
+      header > div, main { width: min(100% - 20px, 1080px); }
+      nav, section { padding: 20px; }
+      table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <p class="eyebrow">Propuesta de gobierno y entrega</p>
+      <h1>Estructura Git de GIS_QB</h1>
+      <p>Modelo propuesto para conservar el código fuente, las Experiences editables y las versiones listas para producción en un único repositorio trazable y reutilizable.</p>
+    </div>
+  </header>
+
+  <main>
+    <nav aria-label="Contenido">
+      <h2>Contenido</h2>
+      <ul>
+        <li><a href="#objetivo">Objetivo</a></li>
+        <li><a href="#principios">Principios</a></li>
+        <li><a href="#estructura">Estructura del repositorio</a></li>
+        <li><a href="#artefactos">Tipos de artefactos</a></li>
+        <li><a href="#flujo">Flujo de publicación</a></li>
+        <li><a href="#roles">Roles</a></li>
+        <li><a href="#versionado">Control de versiones</a></li>
+        <li><a href="#entrega">Contenido de una entrega</a></li>
+        <li><a href="#beneficios">Beneficios</a></li>
+      </ul>
+    </nav>
+
+    <section id="objetivo">
+      <h2>1. Objetivo</h2>
+      <p class="lead">GIS_QB se propone como la fuente oficial para reconstruir, mantener y desplegar las soluciones de Hidrograma desarrolladas con ArcGIS Experience Builder Developer Edition.</p>
+      <p>El repositorio no contiene la instalación completa de Experience Builder. Conserva únicamente los componentes propios del proyecto y las entregas necesarias para que otro integrante pueda continuar el trabajo o desplegar una versión aprobada.</p>
+
+      <div class="callout success">
+        <strong>Resultado esperado:</strong> un nuevo desarrollador puede clonar GIS_QB, conectar los widgets a su instalación local, importar las Experiences y reproducir la solución sin depender del equipo donde fue creada.
+      </div>
+    </section>
+
+    <section id="principios">
+      <h2>2. Principios de la propuesta</h2>
+      <div class="cards">
+        <article class="card">
+          <span class="number">1</span>
+          <h3>Una fuente oficial</h3>
+          <p>Los cambios aprobados se conservan en Git y no dependen de carpetas personales o copias manuales.</p>
+        </article>
+        <article class="card">
+          <span class="number">2</span>
+          <h3>Artefactos separados</h3>
+          <p>El código fuente, el proyecto importable y el build de producción cumplen propósitos distintos.</p>
+        </article>
+        <article class="card">
+          <span class="number">3</span>
+          <h3>Trazabilidad</h3>
+          <p>Cada entrega relaciona el cambio del widget con la Experience y la versión desplegable correspondiente.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="estructura">
+      <h2>3. Estructura del repositorio</h2>
+      <pre><code>GIS_QB/
+├── widgets/
+│   ├── hidrograma-interactivo/
+│   ├── hidrograma-interactivoV2/
+│   └── perfil-elevacion/
+│
+├── experiences/
+│   ├── packages/
+│   │   ├── hidrograma-interactivo.zip
+│   │   ├── hidrograma-interactivoV2.zip
+│   │   └── demo-perfiles.zip
+│   │
+│   ├── hidrograma-interactivo/
+│   │   └── app/
+│   ├── hidrograma-interactivoV2/
+│   │   └── app/
+│   └── demo-perfiles/
+│       └── app/
+│
+├── docs/
+│   ├── ambiente-desarrollo.html
+│   └── estructura-git-cliente.html
+│
+└── .gitignore</code></pre>
+
+      <div class="callout warning">
+        No se versionan la distribución completa de Esri, <code>node_modules</code>, credenciales, tokens, sesiones de usuario ni carpetas temporales.
+      </div>
+    </section>
+
+    <section id="artefactos">
+      <h2>4. Tipos de artefactos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Artefacto</th>
+            <th>Ubicación</th>
+            <th>Propósito</th>
+            <th>Uso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Código fuente</strong></td>
+            <td><code>widgets/**</code></td>
+            <td>Implementación editable de los widgets personalizados.</td>
+            <td>Desarrollo, revisión y pruebas.</td>
+          </tr>
+          <tr>
+            <td><strong>Paquete importable</strong></td>
+            <td><code>experiences/packages/*.zip</code></td>
+            <td>Experience reutilizable generada oficialmente por Experience Builder.</td>
+            <td>Importar y continuar editando en otro ambiente.</td>
+          </tr>
+          <tr>
+            <td><strong>Build de producción</strong></td>
+            <td><code>experiences/*/app</code></td>
+            <td>Aplicación web compilada y lista para alojar en un servidor.</td>
+            <td>Pruebas finales y despliegue.</td>
+          </tr>
+          <tr>
+            <td><strong>Documentación</strong></td>
+            <td><code>docs/**</code></td>
+            <td>Procedimientos técnicos, arquitectura y reglas de colaboración.</td>
+            <td>Incorporación, soporte y auditoría.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="callout">
+        El paquete ZIP no debe abrirse y volver a comprimirse manualmente. Se genera con las herramientas de Experience Builder para conservar su estructura, versión y configuración de inicio de sesión.
+      </div>
+    </section>
+
+    <section id="flujo">
+      <h2>5. Flujo de publicación</h2>
+      <div class="stepper" aria-label="Flujo de publicación">
+        <div>Editar el widget o la configuración</div>
+        <div>Probar y guardar la Experience</div>
+        <div>Generar paquete y build</div>
+        <div>Validar producción</div>
+        <div>Revisar, aprobar y publicar en Git</div>
+      </div>
+
+      <h3>Relación entre los componentes</h3>
+      <p>Una modificación funcional no se considera completa hasta actualizar los artefactos que correspondan:</p>
+      <ul class="checks">
+        <li>El código fuente refleja la implementación realizada.</li>
+        <li>La Experience importable conserva la configuración editable.</li>
+        <li>El build de producción contiene el widget compilado.</li>
+        <li>La versión desplegada fue probada mediante HTTP.</li>
+        <li>El commit identifica claramente el alcance de la entrega.</li>
+      </ul>
+    </section>
+
+    <section id="roles">
+      <h2>6. Responsabilidades por rol</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Rol</th>
+            <th>Responsabilidad principal</th>
+            <th>Entrega esperada</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Desarrollador</td>
+            <td>Implementar, revisar y probar el código del widget.</td>
+            <td><span class="tag">widgets/**</span></td>
+          </tr>
+          <tr>
+            <td>Analista GIS</td>
+            <td>Configurar la Experience, integrar widgets y validar el comportamiento funcional.</td>
+            <td><span class="tag">packages/*.zip</span></td>
+          </tr>
+          <tr>
+            <td>Responsable de publicación</td>
+            <td>Generar y probar la aplicación compilada con su configuración de autenticación.</td>
+            <td><span class="tag">experiences/*/app</span></td>
+          </tr>
+          <tr>
+            <td>Revisor</td>
+            <td>Confirmar consistencia entre fuente, Experience y producción antes de aprobar.</td>
+            <td><span class="tag">Pull Request</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="versionado">
+      <h2>7. Política propuesta de control de versiones</h2>
+      <ul>
+        <li><code>main</code> representa la última versión estable y reproducible.</li>
+        <li>Los cambios se desarrollan en ramas con nombres descriptivos.</li>
+        <li>La revisión se realiza mediante Pull Request antes de integrar a <code>main</code>.</li>
+        <li>Los commits separan, cuando sea útil, documentación/configuración y cambios funcionales.</li>
+        <li>Los archivos temporales y dependencias locales permanecen fuera de Git.</li>
+      </ul>
+
+      <div class="callout warning">
+        El Client ID forma parte de la configuración pública del build; tokens, secretos OAuth y credenciales personales nunca deben incluirse.
+      </div>
+    </section>
+
+    <section id="entrega">
+      <h2>8. Contenido mínimo de una entrega</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo de cambio</th>
+            <th>Widget</th>
+            <th>Paquete importable</th>
+            <th>Producción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cambio únicamente de documentación</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td>Cambio interno del widget sin impacto visual</td>
+            <td>Sí</td>
+            <td>Según impacto</td>
+            <td>Sí, si se despliega</td>
+          </tr>
+          <tr>
+            <td>Cambio de interfaz o comportamiento</td>
+            <td>Sí</td>
+            <td>Sí</td>
+            <td>Sí</td>
+          </tr>
+          <tr>
+            <td>Cambio de configuración de la Experience</td>
+            <td>No necesariamente</td>
+            <td>Sí</td>
+            <td>Sí</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="beneficios">
+      <h2>9. Beneficios para el proyecto</h2>
+      <div class="cards">
+        <article class="card">
+          <h3>Continuidad</h3>
+          <p>El conocimiento y los entregables dejan de depender de un único ambiente de desarrollo.</p>
+        </article>
+        <article class="card">
+          <h3>Reproducibilidad</h3>
+          <p>Otro integrante puede reconstruir la solución con los mismos widgets y Experiences.</p>
+        </article>
+        <article class="card">
+          <h3>Auditoría</h3>
+          <p>Git conserva quién cambió cada componente, cuándo se modificó y con qué propósito.</p>
+        </article>
+      </div>
+
+      <div class="callout success">
+        La estructura propuesta permite administrar GIS_QB como un producto: código editable, proyecto reutilizable, versión desplegable y documentación evolucionan juntos bajo control de versiones.
+      </div>
+    </section>
+  </main>
+
+  <footer>GIS_QB · Propuesta de estructura Git para ArcGIS Experience Builder</footer>
+</body>
+</html>

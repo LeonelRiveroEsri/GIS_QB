@@ -1,0 +1,1029 @@
+{
+  "pages": {
+    "page_0": {
+      "id": "page_0",
+      "mode": "FIT_WINDOW",
+      "type": "NORMAL",
+      "layout": {
+        "LARGE": "layout_0"
+      },
+      "isDefault": true,
+      "isVisible": true,
+      "label": "Page"
+    }
+  },
+  "layouts": {
+    "layout_0": {
+      "type": "FIXED",
+      "content": {
+        "0": {
+          "type": "WIDGET",
+          "widgetId": "widget_1",
+          "bbox": {
+            "left": "0%",
+            "right": "0%",
+            "top": "0%",
+            "bottom": "0%",
+            "width": "100%",
+            "height": "100%"
+          },
+          "setting": {
+            "autoProps": {
+              "left": false,
+              "right": false,
+              "top": false,
+              "bottom": false,
+              "height": "STRETCH",
+              "width": "STRETCH"
+            },
+            "vCenter": false,
+            "hCenter": false
+          }
+        }
+      },
+      "order": [
+        "0"
+      ]
+    },
+    "layout_1": {
+      "content": {
+        "0": {
+          "type": "WIDGET",
+          "widgetId": "widget_2",
+          "bbox": {
+            "left": "0.0%",
+            "right": "44.8%",
+            "top": "0.0%",
+            "bottom": "38.4%",
+            "width": "55.2%",
+            "height": "61.6%"
+          },
+          "setting": {
+            "autoProps": {
+              "left": false,
+              "right": true,
+              "top": false,
+              "bottom": true
+            }
+          }
+        }
+      },
+      "type": "FIXED",
+      "label": "Map FixedLayout",
+      "order": [
+        "0"
+      ]
+    }
+  },
+  "exbVersion": "1.20.0",
+  "mainSizeMode": "LARGE",
+  "theme": "themes/master/",
+  "forBuilderAttributes": {
+    "lockLayout": false
+  },
+  "template": "blankfullscreen",
+  "widgets": {
+    "widget_1": {
+      "uri": "widgets/arcgis/arcgis-map/",
+      "version": "1.20.0",
+      "label": "Map",
+      "config": {
+        "toolConfig": {
+          "canZoom": false,
+          "canHome": false,
+          "canSearch": false,
+          "canNavigation": false
+        },
+        "isUseCustomMapState": false,
+        "initialMapDataSourceID": "dataSource_2",
+        "initialMapState": null,
+        "scaleRange": null,
+        "customLODs": null
+      },
+      "id": "widget_1",
+      "layouts": {
+        "MapFixedLayout": {
+          "LARGE": "layout_1"
+        }
+      },
+      "dataActions": {
+        "showOnMap": {
+          "config": {
+            "isUseCustomSymbol": true,
+            "isOperationalLayer": true,
+            "symbolOption": {
+              "pointSymbol": {
+                "type": "esriSMS",
+                "color": [
+                  255,
+                  255,
+                  0,
+                  150
+                ],
+                "angle": 0,
+                "xoffset": 0,
+                "yoffset": 0,
+                "size": 12,
+                "style": "esriSMSCircle",
+                "outline": {
+                  "type": "esriSLS",
+                  "color": [
+                    255,
+                    255,
+                    0,
+                    150
+                  ],
+                  "width": 1,
+                  "style": "esriSLSSolid"
+                }
+              },
+              "polylineSymbol": {
+                "type": "esriSLS",
+                "color": [
+                  255,
+                  255,
+                  0,
+                  150
+                ],
+                "width": 0.75,
+                "style": "esriSLSSolid"
+              },
+              "polygonSymbol": {
+                "type": "esriSFS",
+                "color": [
+                  255,
+                  255,
+                  0,
+                  150
+                ],
+                "outline": {
+                  "type": "esriSLS",
+                  "color": [
+                    255,
+                    255,
+                    0,
+                    150
+                  ],
+                  "width": 1,
+                  "style": "esriSLSSolid"
+                },
+                "style": "esriSFSSolid"
+              }
+            }
+          }
+        }
+      },
+      "useDataSources": [
+        {
+          "dataSourceId": "dataSource_2",
+          "mainDataSourceId": "dataSource_2"
+        }
+      ]
+    },
+    "widget_2": {
+      "uri": "widgets/perfil-elevacion/",
+      "version": "1.20.0",
+      "label": "Perfil de elevacion",
+      "config": {
+        "useMapWidget": false,
+        "activeDataSource": "dataSource_2",
+        "generalSettings": {
+          "allowExport": true,
+          "keepResultsWhenClosed": true,
+          "isSelectToolActive": false,
+          "isDrawToolActive": false,
+          "showGridAxis": true,
+          "showAxisTitles": false,
+          "showLegend": true,
+          "buttonStyle": "ICONTEXT"
+        },
+        "configInfo": {
+          "dataSource_2": {
+            "elevationLayersSettings": {
+              "addedElevationLayers": [
+                {
+                  "id": "33779453785819361784913163096",
+                  "useDataSource": {
+                    "dataSourceId": "dataSource_2-9c70d82ecb6fe4fa",
+                    "mainDataSourceId": "dataSource_2-9c70d82ecb6fe4fa",
+                    "rootDataSourceId": "dataSource_2"
+                  },
+                  "label": "ELEVATION_MINA_SATELITAL_2026",
+                  "elevationLayerUrl": "https://tiles.arcgis.com/tiles/ooZ6ebRuTSh0HnTQ/arcgis/rest/services/ELEVATION_MINA_2026_20260601145051/ImageServer",
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#b54900",
+                    "lineThickness": 2
+                  },
+                  "displayStatistics": true,
+                  "selectedStatistics": [
+                    {
+                      "name": "avgElevation",
+                      "label": "AVG Elevation",
+                      "enabled": true
+                    },
+                    {
+                      "name": "avgNegativeSlope",
+                      "label": "AVG Negative Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "avgPositiveSlope",
+                      "label": "AVG Positive Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "elevationGain",
+                      "label": "Elevation Gain",
+                      "enabled": true
+                    },
+                    {
+                      "name": "elevationLoss",
+                      "label": "Elevation Loss",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxDistance",
+                      "label": "MAX Distance",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxElevation",
+                      "label": "MAX Elevation",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxNegativeSlope",
+                      "label": "MAX Negative Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxPositiveSlope",
+                      "label": "MAX Positive Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "minElevation",
+                      "label": "MIN Elevation",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "id": "70130505384088641784913163096",
+                  "useDataSource": {
+                    "dataSourceId": "dataSource_2-a641090feec32c53",
+                    "mainDataSourceId": "dataSource_2-a641090feec32c53",
+                    "rootDataSourceId": "dataSource_2"
+                  },
+                  "label": "ELEVATION_MINA_GENERAL",
+                  "elevationLayerUrl": "https://tiles.arcgis.com/tiles/ooZ6ebRuTSh0HnTQ/arcgis/rest/services/ELEVATION_MINA_GENERAL_20260519163836/ImageServer",
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#559e3e",
+                    "lineThickness": 2
+                  },
+                  "displayStatistics": true,
+                  "selectedStatistics": [
+                    {
+                      "name": "avgElevation",
+                      "label": "AVG Elevation",
+                      "enabled": true
+                    },
+                    {
+                      "name": "avgNegativeSlope",
+                      "label": "AVG Negative Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "avgPositiveSlope",
+                      "label": "AVG Positive Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "elevationGain",
+                      "label": "Elevation Gain",
+                      "enabled": true
+                    },
+                    {
+                      "name": "elevationLoss",
+                      "label": "Elevation Loss",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxDistance",
+                      "label": "MAX Distance",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxElevation",
+                      "label": "MAX Elevation",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxNegativeSlope",
+                      "label": "MAX Negative Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxPositiveSlope",
+                      "label": "MAX Positive Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "minElevation",
+                      "label": "MIN Elevation",
+                      "enabled": true
+                    }
+                  ]
+                },
+                {
+                  "id": "94323287839065931784913163096",
+                  "useDataSource": {
+                    "dataSourceId": "dataSource_2-aa6bb89dd8fe2054",
+                    "mainDataSourceId": "dataSource_2-aa6bb89dd8fe2054",
+                    "rootDataSourceId": "dataSource_2"
+                  },
+                  "label": "ELEVATION_MINA",
+                  "elevationLayerUrl": "https://tiles.arcgis.com/tiles/ooZ6ebRuTSh0HnTQ/arcgis/rest/services/ELEVATION_MINA_20260207002622/ImageServer",
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#d14786",
+                    "lineThickness": 2
+                  },
+                  "displayStatistics": true,
+                  "selectedStatistics": [
+                    {
+                      "name": "avgElevation",
+                      "label": "AVG Elevation",
+                      "enabled": true
+                    },
+                    {
+                      "name": "avgNegativeSlope",
+                      "label": "AVG Negative Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "avgPositiveSlope",
+                      "label": "AVG Positive Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "elevationGain",
+                      "label": "Elevation Gain",
+                      "enabled": true
+                    },
+                    {
+                      "name": "elevationLoss",
+                      "label": "Elevation Loss",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxDistance",
+                      "label": "MAX Distance",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxElevation",
+                      "label": "MAX Elevation",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxNegativeSlope",
+                      "label": "MAX Negative Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "maxPositiveSlope",
+                      "label": "MAX Positive Slope",
+                      "enabled": true
+                    },
+                    {
+                      "name": "minElevation",
+                      "label": "MIN Elevation",
+                      "enabled": true
+                    }
+                  ]
+                }
+              ],
+              "groundLayerId": "70130505384088641784913163096",
+              "linearUnit": "",
+              "elevationUnit": "",
+              "showVolumetricObjLineInGraph": false,
+              "volumetricObjSettingsOptions": {
+                "id": "91520715119467471784913162947",
+                "style": {
+                  "lineType": "solid-line",
+                  "lineColor": "#cf4ccf",
+                  "lineThickness": 2
+                },
+                "volumetricObjLabel": "Volumetric objects",
+                "displayStatistics": true,
+                "selectedStatistics": [
+                  {
+                    "name": "avgElevation",
+                    "label": "AVG Elevation",
+                    "enabled": true
+                  },
+                  {
+                    "name": "avgNegativeSlope",
+                    "label": "AVG Negative Slope",
+                    "enabled": true
+                  },
+                  {
+                    "name": "avgPositiveSlope",
+                    "label": "AVG Positive Slope",
+                    "enabled": true
+                  },
+                  {
+                    "name": "elevationGain",
+                    "label": "Elevation Gain",
+                    "enabled": true
+                  },
+                  {
+                    "name": "elevationLoss",
+                    "label": "Elevation Loss",
+                    "enabled": true
+                  },
+                  {
+                    "name": "maxDistance",
+                    "label": "MAX Distance",
+                    "enabled": true
+                  },
+                  {
+                    "name": "maxElevation",
+                    "label": "MAX Elevation",
+                    "enabled": true
+                  },
+                  {
+                    "name": "maxNegativeSlope",
+                    "label": "MAX Negative Slope",
+                    "enabled": true
+                  },
+                  {
+                    "name": "maxPositiveSlope",
+                    "label": "MAX Positive Slope",
+                    "enabled": true
+                  },
+                  {
+                    "name": "minElevation",
+                    "label": "MIN Elevation",
+                    "enabled": true
+                  }
+                ]
+              }
+            },
+            "profileSettings": {
+              "isProfileSettingsEnabled": false,
+              "isCustomizeOptionEnabled": false,
+              "layers": [
+                {
+                  "layerId": "dataSource_2-19d201687fc-layer-112",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#a4a54e",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1906f85fb05-layer-108-1906f85fc67-layer-111",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#4f1882",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1906f85fb05-layer-108-1906f85fc67-layer-110",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#c99c21",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1906f85fb05-layer-108-1906f85fc67-layer-109",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#966127",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1906f85fb05-layer-108-1906f95381b-layer-113",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#d319ef",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1906f85fb05-layer-108-1906f99a36f-layer-117",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#e9abe0",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1906f85fb05-layer-108-1906fa051e7-layer-192",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#faf6e9",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1906f85fb05-layer-108-1906fa1fc0f-layer-196",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#edf455",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1906f85fb05-layer-108-1906fa3614d-layer-200",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#0e220b",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-18ec48abd53-layer-104",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#070455",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1980a80fe7d-layer-126",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#f21bcf",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-186e39e5b9a-layer-86-190510de7e3-layer-107",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#17114e",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-1874dcdc03f-layer-81",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#30859d",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-18d439841ed-layer-101",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#fe2364",
+                    "lineThickness": 3
+                  }
+                },
+                {
+                  "layerId": "dataSource_2-18b1b42a11d-layer-101",
+                  "elevationSettings": {
+                    "type": "z",
+                    "unit": "meters",
+                    "field1": "",
+                    "field2": ""
+                  },
+                  "distanceSettings": {
+                    "type": "map",
+                    "field": "Shape__Length",
+                    "unit": "kilometers"
+                  },
+                  "style": {
+                    "lineType": "solid-line",
+                    "lineColor": "#bd9f9b",
+                    "lineThickness": 3
+                  }
+                }
+              ],
+              "selectionModeOptions": {
+                "selectionMode": "multiple",
+                "style": {
+                  "lineType": "dotted-line",
+                  "lineColor": "#fcfc03",
+                  "lineThickness": 3
+                }
+              },
+              "supportAddedLayers": false
+            },
+            "assetSettings": {
+              "isAssetSettingsEnabled": false,
+              "layers": [],
+              "assetIntersectingBuffer": {
+                "enabled": false,
+                "bufferDistance": 10,
+                "bufferUnits": "",
+                "bufferSymbol": {
+                  "type": "esriSFS",
+                  "color": [
+                    239,
+                    132,
+                    38,
+                    128
+                  ],
+                  "outline": {
+                    "type": "esriSLS",
+                    "color": [
+                      184,
+                      115,
+                      59,
+                      255
+                    ],
+                    "width": 1.5,
+                    "style": "esriSLSSolid"
+                  },
+                  "style": "esriSFSSolid"
+                }
+              }
+            }
+          }
+        }
+      },
+      "id": "widget_2",
+      "outputDataSources": [
+        "widget_2-output"
+      ],
+      "useDataSources": [
+        {
+          "dataSourceId": "dataSource_2-19d201687fc-layer-112",
+          "mainDataSourceId": "dataSource_2-19d201687fc-layer-112",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f85fc67-layer-111",
+          "mainDataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f85fc67-layer-111",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f85fc67-layer-110",
+          "mainDataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f85fc67-layer-110",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f85fc67-layer-109",
+          "mainDataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f85fc67-layer-109",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f95381b-layer-113",
+          "mainDataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f95381b-layer-113",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f99a36f-layer-117",
+          "mainDataSourceId": "dataSource_2-1906f85fb05-layer-108-1906f99a36f-layer-117",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1906f85fb05-layer-108-1906fa051e7-layer-192",
+          "mainDataSourceId": "dataSource_2-1906f85fb05-layer-108-1906fa051e7-layer-192",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1906f85fb05-layer-108-1906fa1fc0f-layer-196",
+          "mainDataSourceId": "dataSource_2-1906f85fb05-layer-108-1906fa1fc0f-layer-196",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1906f85fb05-layer-108-1906fa3614d-layer-200",
+          "mainDataSourceId": "dataSource_2-1906f85fb05-layer-108-1906fa3614d-layer-200",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-18ec48abd53-layer-104",
+          "mainDataSourceId": "dataSource_2-18ec48abd53-layer-104",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1980a80fe7d-layer-126",
+          "mainDataSourceId": "dataSource_2-1980a80fe7d-layer-126",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-186e39e5b9a-layer-86-190510de7e3-layer-107",
+          "mainDataSourceId": "dataSource_2-186e39e5b9a-layer-86-190510de7e3-layer-107",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-1874dcdc03f-layer-81",
+          "mainDataSourceId": "dataSource_2-1874dcdc03f-layer-81",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-18d439841ed-layer-101",
+          "mainDataSourceId": "dataSource_2-18d439841ed-layer-101",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        },
+        {
+          "dataSourceId": "dataSource_2-18b1b42a11d-layer-101",
+          "mainDataSourceId": "dataSource_2-18b1b42a11d-layer-101",
+          "rootDataSourceId": "dataSource_2",
+          "fields": []
+        }
+      ],
+      "useMapWidgetIds": [
+        "widget_1"
+      ]
+    }
+  },
+  "widgetsManifest": {},
+  "views": {},
+  "sections": {},
+  "dialogs": {},
+  "messageConfigs": {},
+  "attributes": {
+    "portalUrl": "https://Teck-QB2.maps.arcgis.com"
+  },
+  "timestamp": 1784915381880,
+  "sharedThemeVariables": {
+    "header": {
+      "bg": "#001040",
+      "color": "#ffffff"
+    },
+    "body": {},
+    "button": {}
+  },
+  "mainLocale": "en-us",
+  "dataSources": {
+    "dataSource_2": {
+      "id": "dataSource_2",
+      "type": "WEB_SCENE",
+      "sourceLabel": "SEGUIMIENTO PLAN SEMANAL",
+      "itemId": "c9b85efd4df74a81a320f8dea7c55f67",
+      "portalUrl": "https://Teck-QB2.maps.arcgis.com"
+    },
+    "widget_2-output": {
+      "id": "widget_2-output",
+      "type": "FEATURE_LAYER",
+      "label": "Perfil de elevacion statistics",
+      "originDataSources": [],
+      "isOutputFromWidget": true,
+      "isDataInDataSourceInstance": false,
+      "schema": {
+        "label": "Perfil de elevacion statistics",
+        "idField": "OBJECTID",
+        "fields": {
+          "name": {
+            "alias": "Name",
+            "type": "NUMBER",
+            "jimuName": "name",
+            "name": "name"
+          },
+          "OBJECTID": {
+            "alias": "OBJECTID",
+            "type": "NUMBER",
+            "jimuName": "OBJECTID",
+            "name": "OBJECTID"
+          },
+          "maxDistance": {
+            "alias": "MAXDistance",
+            "type": "STRING",
+            "jimuName": "maxDistance",
+            "name": "maxDistance"
+          },
+          "minElevation": {
+            "alias": "MINElevation",
+            "type": "STRING",
+            "jimuName": "minElevation",
+            "name": "minElevation"
+          },
+          "maxElevation": {
+            "alias": "MAXElevation",
+            "type": "STRING",
+            "jimuName": "maxElevation",
+            "name": "maxElevation"
+          },
+          "avgElevation": {
+            "alias": "AVGElevation",
+            "type": "STRING",
+            "jimuName": "avgElevation",
+            "name": "avgElevation"
+          },
+          "elevationGain": {
+            "alias": "ElevationGain",
+            "type": "STRING",
+            "jimuName": "elevationGain",
+            "name": "elevationGain"
+          },
+          "elevationLoss": {
+            "alias": "ElevationLoss",
+            "type": "STRING",
+            "jimuName": "elevationLoss",
+            "name": "elevationLoss"
+          },
+          "maxPositiveSlope": {
+            "alias": "MAXPositiveSlope",
+            "type": "STRING",
+            "jimuName": "maxPositiveSlope",
+            "name": "maxPositiveSlope"
+          },
+          "maxNegativeSlope": {
+            "alias": "MAXNegativeSlope",
+            "type": "STRING",
+            "jimuName": "maxNegativeSlope",
+            "name": "maxNegativeSlope"
+          },
+          "avgPositiveSlope": {
+            "alias": "AVGPositiveSlope",
+            "type": "STRING",
+            "jimuName": "avgPositiveSlope",
+            "name": "avgPositiveSlope"
+          },
+          "avgNegativeSlope": {
+            "alias": "AVGNegativeSlope",
+            "type": "STRING",
+            "jimuName": "avgNegativeSlope",
+            "name": "avgNegativeSlope"
+          }
+        }
+      },
+      "geometryType": "esriGeometryPolyline"
+    }
+  },
+  "pageStructure": [
+    {
+      "page_0": []
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "name": "perfil-elevacion",
+  "label": "Perfil de elevacion",
+  "type": "widget",
+  "version": "1.20.0",
+  "exbVersion": "1.20.0",
+  "author": "TECK_EXP",
+  "description": "Widget personalizado para crear perfiles de elevacion desde lineas de uno o multiples segmentos sobre un mapa o escena.",
+  "copyright": "",
+  "license": "http://www.apache.org/licenses/LICENSE-2.0",
+  "dependency": "jimu-arcgis",
+  "properties": {
+    "coverLayoutBackground": true,
+    "needHiddenState": true,
+    "showDescription": true
+  },
+  "messageActions": [
+    {
+      "name": "select",
+      "label": "Ver perfil",
+      "uri": "message-actions/select-line-message-action"
+    }
+  ],
+  "dataActions": [
+    {
+      "name": "view",
+      "label": "Ver perfil de elevacion",
+      "uri": "data-actions/view-profile-data-action",
+      "icon": "runtime/assets/icons/elevation-icon.svg"
+    }
+  ],
+  "translatedLocales": [
+    "en",
+    "ar",
+    "bg",
+    "bs",
+    "ca",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "es",
+    "et",
+    "fi",
+    "fr",
+    "he",
+    "hr",
+    "hu",
+    "id",
+    "it",
+    "ja",
+    "ko",
+    "lt",
+    "lv",
+    "no",
+    "nl",
+    "pl",
+    "pt-br",
+    "pt-pt",
+    "ro",
+    "ru",
+    "sk",
+    "sl",
+    "sr",
+    "sv",
+    "th",
+    "tr",
+    "zh-cn",
+    "uk",
+    "vi",
+    "zh-hk",
+    "zh-tw"
+  ],
+  "defaultSize": {
+    "width": 600,
+    "height": 400
+  }
+}

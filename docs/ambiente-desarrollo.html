@@ -177,6 +177,7 @@
         <tbody>
           <tr><td><code>widgets/hidrograma-interactivo</code></td><td>Código fuente del widget original.</td><td>Sí</td></tr>
           <tr><td><code>widgets/hidrograma-interactivoV2</code></td><td>Código fuente del widget V2. En Experience Builder se instala como <code>hidrogramaV2</code>.</td><td>Sí</td></tr>
+          <tr><td><code>widgets/perfil-elevacion</code></td><td>Código fuente del widget Perfil de elevación para Experience Builder 1.20.</td><td>Sí</td></tr>
           <tr><td><code>experiences/packages/*.zip</code></td><td>Paquetes editables e importables, generados por Experience Builder mediante <code>zipApp</code>.</td><td>Sí, después de importarlos</td></tr>
           <tr><td><code>experiences/*/app</code></td><td>Build completo para publicar en un servidor web.</td><td>No es la fuente principal</td></tr>
         </tbody>
@@ -307,7 +308,13 @@ type "D:\EXP_GIT\client\your-extensions\widgets\hidrogramaV2\manifest.json"</cod
         El mapeo V2 es intencional: la carpeta real del repositorio es <code>hidrograma-interactivoV2</code>, pero la unión, el manifest y la Experience usan <code>hidrogramaV2</code>. Al editar desde cualquiera de las dos rutas se modifica el mismo archivo versionado.
       </div>
 
-      <h3>4.3 Compartir las dependencias del cliente</h3>
+      <h3>4.3 Crear la unión del widget Perfil de elevación</h3>
+      <pre><code>mklink /J "D:\EXP_GIT\client\your-extensions\widgets\perfil-elevacion" "D:\EXP_GIT\GIS_QB\widgets\perfil-elevacion"
+
+type "D:\EXP_GIT\client\your-extensions\widgets\perfil-elevacion\manifest.json"</code></pre>
+      <p>El manifest debe declarar <code>name: perfil-elevacion</code>, <code>label: Perfil de elevacion</code>, <code>exbVersion: 1.20.0</code> y la dependencia <code>jimu-arcgis</code>.</p>
+
+      <h3>4.4 Compartir las dependencias del cliente</h3>
       <p>Webpack resuelve las uniones usando la ruta física dentro de <code>GIS_QB</code>. Crear una unión adicional para que encuentre el <code>node_modules</code> del cliente:</p>
       <pre><code>if exist "D:\EXP_GIT\GIS_QB\node_modules" (echo EXISTE) else (echo NO_EXISTE)
 
@@ -317,11 +324,12 @@ mklink /J "D:\EXP_GIT\GIS_QB\node_modules" "D:\EXP_GIT\client\node_modules"</cod
 git status --short</code></pre>
       <p><code>node_modules</code> no debe aparecer en Git. Está ignorado y nunca debe agregarse al repositorio.</p>
 
-      <h3>4.4 Confirmar los widgets vinculados</h3>
+      <h3>4.5 Confirmar los widgets vinculados</h3>
       <pre><code>dir /b /ad "D:\EXP_GIT\client\your-extensions\widgets"</code></pre>
       <p>Resultado esperado, sin importar el orden:</p>
       <pre><code>hidrograma-interactivo
 hidrogramaV2
+perfil-elevacion
 simple</code></pre>
 
       <div class="callout warning">
@@ -333,7 +341,8 @@ simple</code></pre>
       <h2>5. Importar las Experiences</h2>
       <p>Los paquetes editables ya están versionados en Git y deben importarse sin abrirlos, extraerlos ni volverlos a comprimir:</p>
       <pre><code>D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivo.zip
-D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2.zip</code></pre>
+D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2.zip
+D:\EXP_GIT\GIS_QB\experiences\packages\demo-perfiles.zip</code></pre>
 
       <p>Luego:</p>
       <ol>
@@ -341,8 +350,8 @@ D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2.zip</code></pre>
         <li>Abrir <code>https://localhost:3001/</code>.</li>
         <li>Ingresar al mismo portal usado por el equipo.</li>
         <li>Elegir <strong>Experience → Import → Import from my computer</strong>.</li>
-        <li>Importar directamente ambos ZIP de <code>experiences/packages</code>.</li>
-        <li>Abrir y guardar las dos Experiences importadas.</li>
+        <li>Importar directamente los tres ZIP de <code>experiences/packages</code>.</li>
+        <li>Abrir y guardar las Experiences importadas.</li>
       </ol>
 
       <div class="callout danger">
@@ -441,9 +450,9 @@ git diff -- widgets</code></pre>
 
       <h3>8.3 Preparar únicamente el alcance autorizado</h3>
       <p>Para entregar widgets y paquetes editables:</p>
-      <pre><code>git add -- "widgets/hidrograma-interactivo" "widgets/hidrograma-interactivoV2"
-git add -- "experiences/packages/hidrograma-interactivo.zip" "experiences/packages/hidrograma-interactivoV2.zip"
-git add -- "experiences/hidrograma-interactivo/app" "experiences/hidrograma-interactivoV2/app"
+      <pre><code>git add -- "widgets/hidrograma-interactivo" "widgets/hidrograma-interactivoV2" "widgets/perfil-elevacion"
+git add -- "experiences/packages/hidrograma-interactivo.zip" "experiences/packages/hidrograma-interactivoV2.zip" "experiences/packages/demo-perfiles.zip"
+git add -- "experiences/hidrograma-interactivo/app" "experiences/hidrograma-interactivoV2/app" "experiences/demo-perfiles/app"
 git diff --cached --stat</code></pre>
 
       <h3>8.4 Commit y push</h3>
