@@ -389,49 +389,94 @@ D:\EXP_GIT\client\your-extensions\widgets\hidrogramaV2</code></pre>
 
     <section id="publicacion">
       <h2>7. Exportar y sincronizar</h2>
-      <p>Primero guardar los cambios de las Experiences en la interfaz. Después identificar sus IDs locales:</p>
-      <pre><code>dir /b /ad "D:\EXP_GIT\server\public\apps"
+      <p>Ejecutar esta etapa desde una terminal <code>cmd</code>. Copiar y comprobar un bloque por vez; no ejecutar toda la sección como un único comando.</p>
+
+      <h3>7.1 Guardar y publicar en Builder</h3>
+      <p>Antes de usar la terminal, abrir la Experience, guardar los cambios, pulsar <strong>Publish</strong> y regresar a la página principal de Experience Builder.</p>
+      <p><strong>Resultado esperado:</strong> la tarjeta de la Experience muestra el estado <strong>Published</strong>.</p>
+
+      <h3>7.2 Identificar el ID local</h3>
+      <p>Listar las aplicaciones existentes:</p>
+      <pre><code>dir /b /ad "D:\EXP_GIT\server\public\apps"</code></pre>
+      <p><strong>Resultado esperado:</strong> una lista de IDs numéricos, por ejemplo <code>0</code>, <code>1</code> y <code>2</code>.</p>
+
       <p>Revisar el <code>info.json</code> de cada ID mostrado hasta encontrar el título correcto:</p>
       <pre><code>type "D:\EXP_GIT\server\public\apps\0\info.json"
-type "D:\EXP_GIT\server\public\apps\1\info.json"</code></pre>
-      <p>Los IDs son locales y pueden cambiar en cada equipo. En la instalación nueva validada, el ID <code>1</code> corresponde a Hidrograma Interactivo V2.</p>
-
-      <h3>7.1 Generar un paquete con Client ID</h3>
-      <p>El Client ID validado para las aplicaciones desplegadas de este proyecto es <code>BtJfYNpED0l11nil</code>. Es un identificador público, no una contraseña. El tercer argumento de <code>zipApp</code> es obligatorio en el flujo del equipo; si se omite, el build queda con <code>"clientId": ""</code> y cambia el inicio de sesión.</p>
-      <pre><code>if not exist "D:\EXP_GIT\GIS_QB\experiences\packages" mkdir "D:\EXP_GIT\GIS_QB\experiences\packages"
-cd /d D:\EXP_GIT
-
-set NODE_ENV=production&amp;&amp; node -e "require('./server/src/middlewares/dev/apps/app-download.js').zipApp('1', 'D:/EXP_GIT/GIS_QB/experiences/packages/hidrograma-interactivoV2-new.zip', 'BtJfYNpED0l11nil')"</code></pre>
-
+type "D:\EXP_GIT\server\public\apps\1\info.json"
+type "D:\EXP_GIT\server\public\apps\2\info.json"</code></pre>
       <div class="callout warning">
-        <code>zipApp</code> no sobrescribe un archivo existente. Generar primero un nombre temporal como <code>*-new.zip</code>; reemplazar el ZIP oficial únicamente después de validarlo.
+        Los IDs son locales y pueden cambiar en cada equipo. No asumir que una Experience siempre tendrá el mismo ID.
       </div>
 
-      <h3>7.2 Extraer y validar antes de reemplazar</h3>
-      <pre><code>if exist "D:\EXP_GIT\_stage_hidrogramaV2" (echo EXISTE) else (echo NO_EXISTE)
+      <h3>7.3 Anotar los datos de exportación</h3>
+      <table>
+        <thead>
+          <tr><th>Experience</th><th>Nombre en Git</th><th>Paquete</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Hidrograma Interactivo</td><td><code>hidrograma-interactivo</code></td><td><code>hidrograma-interactivo.zip</code></td></tr>
+          <tr><td>Hidrograma Interactivo V2</td><td><code>hidrograma-interactivoV2</code></td><td><code>hidrograma-interactivoV2.zip</code></td></tr>
+          <tr><td>Perfiles</td><td><code>demo-perfiles</code></td><td><code>demo-perfiles.zip</code></td></tr>
+        </tbody>
+      </table>
+      <p>Antes de continuar, anotar el ID encontrado y elegir el nombre correspondiente. El ejemplo siguiente usa:</p>
+      <pre><code>ID local: 2
+Nombre Git: demo-perfiles
+Client ID: BtJfYNpED0l11nil</code></pre>
 
-powershell -NoProfile -Command "Expand-Archive -LiteralPath 'D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2-new.zip' -DestinationPath 'D:\EXP_GIT\_stage_hidrogramaV2'"
+      <h3>7.4 Generar un paquete temporal con Client ID</h3>
+      <p>El Client ID validado para este proyecto es <code>BtJfYNpED0l11nil</code>. Es un identificador público, no una contraseña. El tercer argumento de <code>zipApp</code> es obligatorio; si se omite, cambia el comportamiento del inicio de sesión.</p>
+      <pre><code>if not exist "D:\EXP_GIT\GIS_QB\experiences\packages" mkdir "D:\EXP_GIT\GIS_QB\experiences\packages"
+cd /d D:\EXP_GIT
+set NODE_ENV=production&amp;&amp; node -e "require('./server/src/middlewares/dev/apps/app-download.js').zipApp('2', 'D:/EXP_GIT/GIS_QB/experiences/packages/demo-perfiles-new.zip', 'BtJfYNpED0l11nil')"</code></pre>
+      <p><strong>Resultado esperado:</strong> aparece <code>Done.</code> y se crea <code>demo-perfiles-new.zip</code>.</p>
+      <div class="callout warning">
+        <code>zipApp</code> no sobrescribe archivos. Usar primero <code>-new.zip</code> y reemplazar el paquete oficial solamente después de validarlo.
+      </div>
 
-dir /b /ad "D:\EXP_GIT\_stage_hidrogramaV2\cdn"</code></pre>
-      <p>Usar el número devuelto por el último comando para revisar el archivo, por ejemplo <code>cdn\2\config.json</code>:</p>
-      <pre><code>findstr /I /C:"clientId" "D:\EXP_GIT\_stage_hidrogramaV2\cdn\2\config.json"
-findstr /I /C:"cdn/2" "D:\EXP_GIT\_stage_hidrogramaV2\index.html"</code></pre>
-      <p>Resultados esperados: <code>"clientId": "BtJfYNpED0l11nil"</code> y una referencia de <code>index.html</code> al mismo número de CDN.</p>
+      <h3>7.5 Extraer el paquete temporal</h3>
+      <p>Confirmar primero que la carpeta temporal no exista:</p>
+      <pre><code>if exist "D:\EXP_GIT\_stage_demo_perfiles" (echo EXISTE) else (echo NO_EXISTE)</code></pre>
+      <p>Si el resultado es <code>NO_EXISTE</code>, extraer el ZIP:</p>
+      <pre><code>powershell -NoProfile -Command "Expand-Archive -LiteralPath 'D:\EXP_GIT\GIS_QB\experiences\packages\demo-perfiles-new.zip' -DestinationPath 'D:\EXP_GIT\_stage_demo_perfiles'"
+dir /b /ad "D:\EXP_GIT\_stage_demo_perfiles\cdn"</code></pre>
+      <p><strong>Resultado esperado:</strong> se muestra un único número de CDN, por ejemplo <code>1</code>.</p>
 
-      <h3>7.3 Reemplazar paquete y build de producción</h3>
-      <pre><code>move /Y "D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2-new.zip" "D:\EXP_GIT\GIS_QB\experiences\packages\hidrograma-interactivoV2.zip"
+      <h3>7.6 Validar el Client ID y el CDN</h3>
+      <p>Sustituir <code>1</code> en estos comandos si el paso anterior devolvió otro número:</p>
+      <pre><code>findstr /I /C:"clientId" "D:\EXP_GIT\_stage_demo_perfiles\cdn\1\config.json"
+findstr /I /C:"cdn/1" "D:\EXP_GIT\_stage_demo_perfiles\index.html"
+findstr /S /M /I /C:"perfil-elevacion" "D:\EXP_GIT\_stage_demo_perfiles\cdn\1\*.js"</code></pre>
+      <p><strong>Resultados esperados:</strong></p>
+      <ul class="checklist">
+        <li><code>config.json</code> contiene <code>"clientId": "BtJfYNpED0l11nil"</code>.</li>
+        <li><code>index.html</code> apunta al mismo número de CDN.</li>
+        <li>El último comando encuentra el bundle del widget de perfiles.</li>
+      </ul>
 
-robocopy "D:\EXP_GIT\_stage_hidrogramaV2" "D:\EXP_GIT\GIS_QB\experiences\hidrograma-interactivoV2\app" /MIR /R:2 /W:1</code></pre>
-      <p>Probar el build por HTTP antes de eliminar la carpeta temporal. Los códigos de salida de <code>robocopy</code> entre 0 y 7 se consideran correctos.</p>
+      <h3>7.7 Reemplazar el paquete y sincronizar la aplicación</h3>
+      <p>Ejecutar estos comandos únicamente después de completar las validaciones:</p>
+      <pre><code>move /Y "D:\EXP_GIT\GIS_QB\experiences\packages\demo-perfiles-new.zip" "D:\EXP_GIT\GIS_QB\experiences\packages\demo-perfiles.zip"
+robocopy "D:\EXP_GIT\_stage_demo_perfiles" "D:\EXP_GIT\GIS_QB\experiences\demo-perfiles\app" /MIR /R:2 /W:1</code></pre>
+      <p><strong>Resultado esperado:</strong> el ZIP oficial queda actualizado y <code>robocopy</code> termina con un código entre 0 y 7.</p>
 
-      <h3>7.4 Limpiar después de validar</h3>
-      <pre><code>rmdir /S /Q "D:\EXP_GIT\_stage_hidrogramaV2"</code></pre>
-      <p>Para la Experience original, repetir el mismo procedimiento usando su ID local y las rutas <code>hidrograma-interactivo</code>.</p>
+      <h3>7.8 Probar y limpiar</h3>
+      <p>Probar la aplicación sincronizada por HTTP. Cuando funcione correctamente, eliminar la carpeta temporal:</p>
+      <pre><code>rmdir /S /Q "D:\EXP_GIT\_stage_demo_perfiles"</code></pre>
+
+      <h3>7.9 Aplicar el flujo a otra Experience</h3>
+      <p>Para exportar otra Experience, repetir los pasos 7.2 a 7.8 cambiando solamente:</p>
+      <ul>
+        <li>El ID local de <code>zipApp</code>.</li>
+        <li>El nombre Git indicado en la tabla.</li>
+        <li>Los nombres del ZIP temporal, la carpeta temporal, el paquete oficial y la carpeta <code>app</code>.</li>
+        <li>La cadena del widget usada en la validación final.</li>
+      </ul>
 
       <p>No se requiere <code>xcopy</code> para sincronizar los widgets: las rutas de <code>your-extensions/widgets</code> apuntan directamente al clon mediante las uniones creadas en la sección 4.</p>
 
       <div class="callout success">
-        Este flujo fue validado en Experience Builder 1.20.0: ambos ZIP generados con <code>zipApp</code> se importaron correctamente en un ambiente nuevo.
+        El flujo está completo cuando el ZIP importable, la carpeta desplegable <code>app</code> y el código fuente del widget representan la misma versión.
       </div>
     </section>
 

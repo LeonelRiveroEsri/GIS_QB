@@ -415,8 +415,7 @@
     "title": "hidrograma-interactivoV2",
     "description": null,
     "type": "Web Experience",
-    "thumbnail": null,
-    "express": false
+    "thumbnail": null
   },
   "timestamp": 1777488032447,
   "sharedThemeVariables": {
