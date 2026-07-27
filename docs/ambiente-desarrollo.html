@@ -164,7 +164,7 @@
         <li><a href="#desarrollo">Editar y probar</a></li>
         <li><a href="#publicacion">Exportar y sincronizar</a></li>
         <li><a href="#git">Commit y push</a></li>
-        <li><a href="#produccion">Ver el build de producción</a></li>
+        <li><a href="#produccion">Ambientes y despliegue</a></li>
         <li><a href="#colaboracion">Trabajo por roles</a></li>
         <li><a href="#problemas">Problemas frecuentes</a></li>
       </ul>
@@ -481,40 +481,173 @@ robocopy "D:\EXP_GIT\_stage_demo_perfiles" "D:\EXP_GIT\GIS_QB\experiences\demo-p
     </section>
 
     <section id="git">
-      <h2>8. Commit, revisión y push</h2>
-      <h3>8.1 Crear una rama</h3>
+      <h2>8. Ramas, commit y promoción</h2>
+      <p>El repositorio utiliza dos ramas permanentes:</p>
+      <table>
+        <thead><tr><th>Rama</th><th>Ambiente</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td><code>main</code></td><td>Producción</td><td>Contiene únicamente versiones aprobadas y alimenta el despliegue productivo definido por el cliente.</td></tr>
+          <tr><td><code>testing</code></td><td>Pruebas</td><td>Integra y valida los cambios antes de producción en un ambiente separado.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warning">
+        No desarrollar ni hacer push directo sobre <code>main</code>. Un cambio llega primero a <code>testing</code>, se valida en su sitio y después se promueve a producción mediante un Pull Request.
+      </div>
+
+      <h3>8.1 Crear <code>testing</code> por primera vez</h3>
+      <p>Este bloque se ejecuta una sola vez. Si <code>testing</code> ya existe en GitHub, continuar en 8.2.</p>
       <pre><code>cd /d D:\EXP_GIT\GIS_QB
 git switch main
 git pull --ff-only
+git switch -c testing
+git push -u origin testing</code></pre>
+
+      <h3>8.2 Cambiar a <code>testing</code> cuando ya existe</h3>
+      <p>Éste es el procedimiento habitual antes de editar o preparar un commit:</p>
+      <pre><code>cd /d D:\EXP_GIT\GIS_QB
+git fetch origin
+git switch testing
+git pull --ff-only
+git branch --show-current</code></pre>
+      <p><strong>Resultado esperado:</strong> el último comando muestra <code>testing</code>.</p>
+      <p>Si Git informa que la rama no existe localmente, pero sí existe en GitHub, crear la rama local vinculada a la remota:</p>
+      <pre><code>git switch --track origin/testing
+git branch --show-current</code></pre>
+      <div class="callout warning">
+        Antes de ejecutar <code>git add</code> o <code>git commit</code>, comprobar siempre que <code>git branch --show-current</code> devuelva <code>testing</code>.
+      </div>
+
+      <h3>8.3 Iniciar un cambio nuevo</h3>
+      <p>Para cambios pequeños puede trabajarse directamente en <code>testing</code>. Para trabajo colaborativo o cambios mayores, crear una rama corta desde <code>testing</code>:</p>
+      <pre><code>git switch testing
+git pull --ff-only
 git switch -c feature/descripcion-corta</code></pre>
 
-      <h3>8.2 Revisar</h3>
+      <h3>8.4 Revisar antes del commit</h3>
       <pre><code>git status --short
-git diff --stat
+git --no-pager diff --shortstat
 git diff -- widgets</code></pre>
 
-      <h3>8.3 Preparar únicamente el alcance autorizado</h3>
-      <p>Para entregar widgets y paquetes editables:</p>
-      <pre><code>git add -- "widgets/hidrograma-interactivo" "widgets/hidrograma-interactivoV2" "widgets/perfil-elevacion"
-git add -- "experiences/packages/hidrograma-interactivo.zip" "experiences/packages/hidrograma-interactivoV2.zip" "experiences/packages/demo-perfiles.zip"
-git add -- "experiences/hidrograma-interactivo/app" "experiences/hidrograma-interactivoV2/app" "experiences/demo-perfiles/app"
+      <h3>8.5 Preparar una entrega coherente</h3>
+      <p>Agregar solamente el widget, el ZIP y la aplicación de la Experience modificada. Ejemplo para Hidrograma V2:</p>
+      <pre><code>git add -- "widgets/hidrograma-interactivoV2"
+git add -- "experiences/packages/hidrograma-interactivoV2.zip"
+git add -- "experiences/hidrograma-interactivoV2/app"
 git diff --cached --stat</code></pre>
 
-      <h3>8.4 Commit y push</h3>
-      <pre><code>git commit -m "Describe el cambio"
-git push -u origin feature/descripcion-corta
+      <h3>8.6 Hacer commit y publicar en <code>testing</code></h3>
+      <p>Si se trabaja directamente en <code>testing</code>:</p>
+      <pre><code>git branch --show-current
+git commit -m "Describe el cambio"
+git push origin testing
 git status -sb</code></pre>
+      <p><strong>Resultados esperados:</strong> antes del commit se muestra <code>testing</code> y al finalizar se muestra <code>## testing...origin/testing</code> sin indicadores <code>ahead</code> o <code>behind</code>.</p>
+      <p>Si se utilizó una rama <code>feature/*</code>, publicarla y abrir un Pull Request hacia <code>testing</code>:</p>
+      <pre><code>git push -u origin feature/descripcion-corta</code></pre>
 
-      <p>Abrir un Pull Request hacia <code>main</code>. Para trabajo colaborativo, evitar pushes directos a <code>main</code>.</p>
+      <h3>8.7 Pasar de <code>testing</code> a producción</h3>
+      <p>Producción corresponde a <code>main</code>. La promoción se realiza en GitHub, no mediante un push directo desde la terminal:</p>
+      <ol>
+        <li>Esperar que la plataforma de despliegue publique el último commit de <code>testing</code>.</li>
+        <li>Probar en la URL de testing la autenticación, widgets, mapas, filtros y exportaciones.</li>
+        <li>En GitHub, abrir <strong>Pull requests → New pull request</strong>.</li>
+        <li>Seleccionar <strong>base: main</strong> y <strong>compare: testing</strong>.</li>
+        <li>Revisar y aprobar el Pull Request.</li>
+        <li>Seleccionar <strong>Create a merge commit</strong> y después <strong>Merge pull request</strong>. El pipeline productivo podrá desplegar la nueva versión desde <code>main</code>.</li>
+      </ol>
+      <div class="callout warning">
+        No usar <code>git push origin main</code> para promover una versión. El Pull Request conserva la revisión y permite comprobar exactamente qué se publicará. Para este flujo, no elegir <em>Squash and merge</em>, porque dificultaría volver a alinear <code>testing</code> mediante avance rápido.
+      </div>
+      <p>Después del merge, actualizar las ramas locales:</p>
+      <pre><code>git switch main
+git pull --ff-only
+git switch testing
+git merge --ff-only main
+git push origin testing</code></pre>
+      <p><strong>Resultado esperado:</strong> <code>main</code> y <code>testing</code> quedan alineadas al comenzar el siguiente ciclo.</p>
     </section>
 
     <section id="produccion">
-      <h2>9. Ver localmente la Experience de producción</h2>
+      <h2>9. Ambientes local, testing y producción</h2>
+      <h3>9.1 Probar localmente antes del push</h3>
       <p>No abrir <code>index.html</code> mediante <code>file://</code>. Servir la carpeta con HTTP:</p>
       <pre><code>cd /d "D:\EXP_GIT\GIS_QB\experiences\hidrograma-interactivoV2\app"
 "D:\Env\arcgis-pro\python.exe" -m http.server 8080</code></pre>
 
       <p>Abrir <code>http://localhost:8080/</code>.</p>
+      <p>Detener el servidor con <code>Ctrl+C</code> cuando finalice la prueba.</p>
+
+      <h3>9.2 Netlify para la demostración del equipo</h3>
+      <p>Netlify se utiliza en este proyecto únicamente como plataforma rápida de demostración y validación. No representa la infraestructura definitiva del cliente.</p>
+      <table>
+        <thead><tr><th>Sitio</th><th>Rama</th><th>Directorio de publicación</th></tr></thead>
+        <tbody>
+          <tr><td>Testing</td><td><code>testing</code></td><td><code>experiences/hidrograma-interactivoV2/app</code></td></tr>
+          <tr><td>Producción</td><td><code>main</code></td><td><code>experiences/hidrograma-interactivoV2/app</code></td></tr>
+        </tbody>
+      </table>
+      <p>En ambos sitios dejar vacíos <strong>Base directory</strong>, <strong>Build command</strong> y <strong>Functions directory</strong>. La Experience ya fue compilada por <code>zipApp</code>.</p>
+      <p>Usar nombres y dominios diferentes, por ejemplo:</p>
+      <pre><code>Testing:    https://hidrograma-teck-testing.netlify.app
+Producción: https://hidrograma-teck.netlify.app</code></pre>
+      <div class="callout">
+        Registrar ambos dominios como URI de redirección permitidas en la aplicación OAuth de ArcGIS asociada al Client ID <code>BtJfYNpED0l11nil</code>.
+      </div>
+
+      <h3>9.3 Despliegue del cliente con Terraform y Azure</h3>
+      <p>En el ambiente del cliente, la infraestructura Azure se gestiona mediante Terraform Enterprise y código alojado en GitHub. El repositorio confirmado para el proyecto es:</p>
+      <pre><code>https://github.com/TeckResourcesTDS/terraform-azure-geospatial-latam</code></pre>
+      <p>Los repositorios <code>terraform-azure-geospatial</code> y <code>terraform-azure-prodstats</code> observados durante la reunión sirven como referencia de patrones existentes, pero no deben asumirse como repositorios de trabajo para GIS_QB.</p>
+
+      <h4>Accesos requeridos</h4>
+      <ul class="checklist">
+        <li>Cuenta GitHub vinculada y acceso aceptado a la organización <code>TeckResourcesTDS</code>.</li>
+        <li>Permiso sobre <code>terraform-azure-geospatial-latam</code>.</li>
+        <li>Acceso a la documentación Azure del espacio <code>PI</code> en Confluence.</li>
+        <li>Acceso a Azure DevOps cuando finalice la solicitud o migración indicada por el administrador.</li>
+      </ul>
+      <div class="callout warning">
+        El administrador informó que existe una migración en curso y que todavía pueden presentarse retrasos o problemas de permisos en DevOps. Hasta que finalice, no definir como definitivo el servicio Azure, el pipeline ni el método de publicación del artefacto.
+      </div>
+
+      <h4>Separación de responsabilidades</h4>
+      <p>GIS_QB entrega una versión coherente del código fuente, el paquete importable y la carpeta estática:</p>
+      <pre><code>widgets/&lt;widget&gt;
+experiences/packages/&lt;experience&gt;.zip
+experiences/&lt;experience&gt;/app</code></pre>
+      <p>El repositorio Terraform aprovisiona la infraestructura. El mecanismo que publicará <code>experiences/&lt;nombre&gt;/app</code> en Azure debe confirmarse con el administrador; podría residir en Azure DevOps u otro pipeline de aplicación.</p>
+      <table>
+        <thead><tr><th>Repositorio</th><th>Responsabilidad confirmada</th><th>Pendiente de confirmar</th></tr></thead>
+        <tbody>
+          <tr><td><code>GIS_QB</code></td><td>Widget, ZIP y build estático validado.</td><td>Pipeline que recoge y publica el artefacto.</td></tr>
+          <tr><td><code>terraform-azure-geospatial-latam</code></td><td>Infraestructura Azure definida como código.</td><td>Recursos concretos que se asignarán a GIS_QB.</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warning">
+        No copiar módulos ni recursos desde otros proyectos. Los nombres de recursos, suscripciones, grupos, regiones y servicios deben obtenerse del repositorio LATAM, Confluence y las instrucciones posteriores a la migración.
+      </div>
+
+      <h4>Flujo Terraform observado</h4>
+      <pre><code>feature/* → Pull Request → plan-only en Terraform Enterprise
+main      → ejecución aprobada → apply de infraestructura</code></pre>
+      <p>Este flujo pertenece al repositorio Terraform y no reemplaza el flujo <code>testing → main</code> de GIS_QB. Los ambientes Terraform observados se organizan además mediante carpetas o workspaces como <code>dev/centralus</code>, <code>qa</code> y <code>prod/centralus</code>.</p>
+
+      <h4>Decisiones pendientes con el administrador</h4>
+      <ul>
+        <li>Servicio Azure de destino: Web App, Storage Static Website u otro.</li>
+        <li>Si el pipeline espera un ZIP o el contenido de la carpeta <code>app</code>.</li>
+        <li>Repositorio y herramienta responsables de publicar la aplicación.</li>
+        <li>Correspondencia entre las ramas de GIS_QB y los ambientes <code>dev</code>, <code>qa</code> y <code>prod</code>.</li>
+        <li>URLs finales de Azure que deben registrarse como redirecciones OAuth de ArcGIS.</li>
+      </ul>
+
+      <h3>9.4 Relación entre ramas y despliegues</h3>
+      <ul>
+        <li>Un push o merge a <code>testing</code> debe actualizar solamente el ambiente de pruebas.</li>
+        <li>Un merge aprobado a <code>main</code> habilita el despliegue de producción.</li>
+        <li>Ni Netlify ni Azure recompilan Experience Builder: deben publicar los archivos ya versionados en la carpeta <code>app</code>.</li>
+        <li>La ejecución automática o manual del despliegue de Azure depende de las reglas del pipeline del cliente.</li>
+      </ul>
       <div class="callout warning">
         Experience Builder usa service workers. Si aparece una versión anterior, cerrar las pestañas, borrar los datos del sitio o probar en una ventana privada. Cada exportación puede incrementar la carpeta interna <code>cdn/N</code>; esto es normal y evita caché obsoleta.
       </div>
@@ -561,14 +694,14 @@ git status -sb</code></pre>
     <section>
       <h2>12. Lista final antes del Pull Request</h2>
       <ul class="checklist">
-        <li>La rama parte de la última versión de <code>main</code>.</li>
+        <li>La rama de trabajo parte de la última versión de <code>testing</code>.</li>
         <li>Los widgets fuente contienen los cambios.</li>
         <li>Las Experiences fueron guardadas y sus paquetes se regeneraron con <code>zipApp</code>.</li>
         <li>El texto o función nueva existe en el bundle compilado.</li>
         <li>No hay secretos ni archivos temporales.</li>
-        <li>No hay widgets de perfiles ni recursos de otros clientes.</li>
-        <li>La Experience de producción abre mediante HTTP.</li>
-        <li>El Pull Request explica el cambio y las pruebas realizadas.</li>
+        <li>La Experience abre correctamente mediante HTTP local.</li>
+        <li>El ambiente de <code>testing</code> fue validado (Netlify en la demostración o Azure en el cliente).</li>
+        <li>El Pull Request de <code>testing</code> hacia <code>main</code> explica el cambio y las pruebas realizadas.</li>
       </ul>
     </section>
   </main>
