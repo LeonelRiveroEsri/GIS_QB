@@ -426,6 +426,7 @@ Client ID: BtJfYNpED0l11nil</code></pre>
 
       <h3>7.4 Generar un paquete temporal con Client ID</h3>
       <p>El Client ID validado para este proyecto es <code>BtJfYNpED0l11nil</code>. Es un identificador público, no una contraseña. El tercer argumento de <code>zipApp</code> es obligatorio; si se omite, cambia el comportamiento del inicio de sesión.</p>
+      <p>La configuración, URLs de redirección y dominios permitidos se administran desde la <a href="https://teck-qb2.maps.arcgis.com/home/item.html?id=1fb8fb3cbc364d6badfaa51a2207c360#settings" target="_blank" rel="noopener noreferrer">aplicación registrada de GIS_QB en ArcGIS Online</a>. Se requiere iniciar sesión en la organización <code>teck-qb2</code> con una cuenta autorizada.</p>
       <pre><code>if not exist "D:\EXP_GIT\GIS_QB\experiences\packages" mkdir "D:\EXP_GIT\GIS_QB\experiences\packages"
 cd /d D:\EXP_GIT
 set NODE_ENV=production&amp;&amp; node -e "require('./server/src/middlewares/dev/apps/app-download.js').zipApp('2', 'D:/EXP_GIT/GIS_QB/experiences/packages/demo-perfiles-new.zip', 'BtJfYNpED0l11nil')"</code></pre>
@@ -591,7 +592,7 @@ git push origin testing</code></pre>
       <pre><code>Testing:    https://hidrograma-teck-testing.netlify.app
 Producción: https://hidrograma-teck.netlify.app</code></pre>
       <div class="callout">
-        Registrar ambos dominios como URI de redirección permitidas en la aplicación OAuth de ArcGIS asociada al Client ID <code>BtJfYNpED0l11nil</code>.
+        Registrar ambos dominios como URI de redirección permitidas en la <a href="https://teck-qb2.maps.arcgis.com/home/item.html?id=1fb8fb3cbc364d6badfaa51a2207c360#settings" target="_blank" rel="noopener noreferrer">aplicación OAuth de ArcGIS</a> asociada al Client ID <code>BtJfYNpED0l11nil</code>.
       </div>
 
       <h3>9.3 Despliegue del cliente con Terraform y Azure</h3>
