@@ -31,6 +31,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const [compareId, setCompareId] = React.useState('')
   const [compareMode, setCompareMode] = React.useState(false)
   const [query, setQuery] = React.useState('')
+  const [year, setYear] = React.useState('')
   const [from, setFrom] = React.useState('')
   const [to, setTo] = React.useState('')
   const [opacityById, setOpacityById] = React.useState<Record<string, number>>({})
@@ -345,20 +346,26 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     }
   }, [compareMode, activeId, compareId, items, jmv, removeSwipe])
 
+  const years = React.useMemo(() =>
+    Array.from(new Set(items.map(item => item.date.getFullYear())))
+      .sort((a, b) => b - a)
+  , [items])
+
   const filtered = React.useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase()
     return items.filter(item =>
       (!normalized || item.title.toLocaleLowerCase().includes(normalized) || item.iso.includes(normalized)) &&
+      (!year || item.date.getFullYear() === Number(year)) &&
       (!from || item.iso >= from) &&
       (!to || item.iso <= to)
     )
-  }, [items, query, from, to])
+  }, [items, query, year, from, to])
 
   const activeIndex = items.findIndex(item => item.id === activeId)
   const widgetTitle = props.config.widgetTitle?.trim() || 'Imágenes drone'
   const month = (date: Date) => date.toLocaleDateString('es-CL', { month: 'short' }).replace('.', '')
   const longDate = (date: Date) => date.toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })
-  const clearFilters = () => { setQuery(''); setFrom(''); setTo('') }
+  const clearFilters = () => { setQuery(''); setYear(''); setFrom(''); setTo('') }
 
   const content = () => {
     if (status === 'idle' || !props.useMapWidgetIds?.length) return <div className='drone-state'><EmptyIcon/><strong>{widgetTitle}</strong><span>{t('noMap')}</span></div>
@@ -379,6 +386,13 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
           <input aria-label={t('search')} placeholder={t('search')} value={query} onChange={e => setQuery(e.target.value)}/>
           {query && <button className='drone-clear-search' onClick={() => setQuery('')} aria-label={t('clear')}>×</button>}
         </div>
+        <label className='drone-year'>
+          <span>{t('year')}</span>
+          <select value={year} onChange={e => setYear(e.target.value)} aria-label={t('year')}>
+            <option value=''>{t('allYears')}</option>
+            {years.map(availableYear => <option key={availableYear} value={availableYear}>{availableYear}</option>)}
+          </select>
+        </label>
         <div className='drone-range'>
           <label>{t('from')}<input type='date' value={from} max={to || undefined} onChange={e => setFrom(e.target.value)}/></label>
           <span className='drone-dash'>—</span>
@@ -386,7 +400,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
         </div>
         <div className='drone-filter-meta'>
           <span><strong>{t('images')}:</strong> {filtered.length} {t('of')} {items.length}</span>
-          {(query || from || to) && <button className='drone-link' onClick={clearFilters}>{t('clear')}</button>}
+          {(query || year || from || to) && <button className='drone-link' onClick={clearFilters}>{t('clear')}</button>}
         </div>
       </section>
 

@@ -10,6 +10,8 @@ define({
   active: 'Visible',
   available: 'available',
   search: 'Search by date or name',
+  year: 'Year',
+  allYears: 'All years',
   from: 'From',
   to: 'To',
   clear: 'Clear filters',
