@@ -17,6 +17,7 @@ define({
   next: 'Next image',
   image: 'Image',
   layer: 'Layer',
+  opacity: 'Opacity',
   of: 'of',
   compare: 'Compare',
   compareHint: 'Drag the swipe curtain to compare two dates.',

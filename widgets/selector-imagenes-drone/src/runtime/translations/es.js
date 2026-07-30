@@ -17,6 +17,7 @@ define({
   next: 'Imagen siguiente',
   image: 'Imagen',
   layer: 'Capa',
+  opacity: 'Transparencia',
   of: 'de',
   compare: 'Comparar',
   compareHint: 'Desliza la cortina para comparar dos fechas.',

@@ -64,14 +64,17 @@ export const getStyle = () => css`
 
   .drone-list { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 8px 10px 14px; background: #f7f9f9; }
   .drone-card {
-    width: 100%; display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 11px;
-    min-height: 82px; margin: 6px 0; padding: 11px 10px; text-align: left;
-    border: 1px solid transparent; border-radius: 9px; background: #fff; color: inherit; cursor: pointer;
+    position: relative; width: 100%; min-height: 82px; margin: 6px 0;
+    border: 1px solid transparent; border-radius: 9px; background: #fff; color: inherit;
     box-shadow: 0 1px 2px rgba(25,50,56,.07); transition: border-color .15s, transform .15s, box-shadow .15s;
   }
   .drone-card:hover { border-color: #a8ceca; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(25,50,56,.09); }
   .drone-card.is-active { border-color: var(--drone-teal); box-shadow: 0 0 0 1px var(--drone-teal), 0 5px 14px rgba(8,127,117,.12); }
   .drone-card.is-compare { border-color: #9c7b30; background: #fffdf7; }
+  .drone-card-select {
+    width: 100%; min-height: 80px; display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 11px;
+    padding: 11px 10px 31px; border: 0; border-radius: inherit; text-align: left; color: inherit; background: transparent; cursor: pointer;
+  }
   .drone-date-box { width: 42px; height: 45px; border-radius: 7px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #edf3f3; color: #35545a; }
   .is-active .drone-date-box { background: var(--drone-soft); color: var(--drone-teal-dark); }
   .drone-day { font-size: 18px; font-weight: 750; line-height: 18px; }
@@ -85,6 +88,14 @@ export const getStyle = () => css`
   .drone-check { width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid #c9d4d6; border-radius: 50%; color: transparent; }
   .is-active .drone-check { color: #fff; border-color: var(--drone-teal); background: var(--drone-teal); }
   .is-compare .drone-check { color: #fff; border-color: #9c7b30; background: #9c7b30; }
+  .drone-opacity {
+    position: absolute; right: 9px; bottom: 7px; min-width: 54px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    padding: 0 7px; border: 1px solid #c7d4d6; border-radius: 11px;
+    color: #486168; background: #f7f9f9; font-size: 10px; font-weight: 700; cursor: pointer;
+  }
+  .drone-opacity:hover, .drone-opacity:focus-visible { color: #fff; border-color: var(--drone-teal); background: var(--drone-teal); outline: none; }
+  .drone-opacity-icon { font-size: 13px; line-height: 1; }
 
   .drone-footer { flex: 0 0 auto; position: relative; z-index: 3; padding: 12px 16px 14px; border-top: 1px solid var(--drone-line); background: #fff; }
   .drone-nav { display: grid; grid-template-columns: 38px 1fr 38px; align-items: center; gap: 9px; }
@@ -123,7 +134,8 @@ export const getStyle = () => css`
     .drone-range { margin-top: 7px; }
     .drone-filter-meta { min-height: 23px; }
     .drone-list { padding: 5px 8px 8px; }
-    .drone-card { min-height: 68px; margin: 4px 0; padding: 8px; }
+    .drone-card { min-height: 68px; margin: 4px 0; }
+    .drone-card-select { min-height: 66px; padding: 8px 8px 28px; }
     .drone-date-box { height: 41px; }
     .drone-card-sub { margin-top: 3px; }
     .drone-badge { margin-top: 3px; }
@@ -138,6 +150,7 @@ export const getStyle = () => css`
     .drone-header { padding-top: 10px; padding-bottom: 10px; }
     .drone-range input { height: 30px; }
     .drone-card { min-height: 60px; }
+    .drone-card-select { min-height: 58px; }
     .drone-footer { padding-top: 6px; padding-bottom: 7px; }
   }
 `
