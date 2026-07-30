@@ -54,9 +54,9 @@
             "left": "0.0%",
             "right": "64.2%",
             "top": "0.0%",
-            "bottom": "0.0%",
+            "bottom": "3.8%",
             "width": "35.8%",
-            "height": "100.0%"
+            "height": "96.2%"
           },
           "setting": {
             "autoProps": {
@@ -216,7 +216,7 @@
     "type": "Web Experience",
     "thumbnail": null
   },
-  "timestamp": 1785432296837,
+  "timestamp": 1785436729706,
   "sharedThemeVariables": {
     "header": {
       "bg": "#001040",
@@ -240,5 +240,5 @@
       "page_0": []
     }
   ],
-  "publishTimestamp": 1785432312313
+  "publishTimestamp": 1785436732658
 }

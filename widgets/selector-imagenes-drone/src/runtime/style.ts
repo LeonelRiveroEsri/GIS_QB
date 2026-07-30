@@ -55,6 +55,10 @@ export const getStyle = () => css`
   }
   .drone-search input:focus { border-color: var(--drone-teal); box-shadow: 0 0 0 2px rgba(8,127,117,.13); background: #fff; }
   .drone-clear-search { position: absolute; right: 4px; top: 3px; width: 32px; height: 32px; border: 0; background: transparent; color: #65767c; cursor: pointer; }
+  .drone-year { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; margin-top: 11px; }
+  .drone-year span { font-size: 10px; font-weight: 700; color: var(--drone-muted); text-transform: uppercase; letter-spacing: .06em; }
+  .drone-year select { width: 100%; height: 33px; border: 1px solid #cbd7da; border-radius: 6px; padding: 0 28px 0 9px; color: var(--drone-ink); background: #fff; }
+  .drone-year select:focus { border-color: var(--drone-teal); box-shadow: 0 0 0 2px rgba(8,127,117,.13); outline: none; }
   .drone-range { display: grid; grid-template-columns: 1fr 12px 1fr; gap: 7px; align-items: end; margin-top: 11px; }
   .drone-range label { display: block; font-size: 10px; font-weight: 700; color: var(--drone-muted); text-transform: uppercase; letter-spacing: .06em; }
   .drone-range input { width: 100%; height: 33px; margin-top: 4px; border: 1px solid #cbd7da; border-radius: 6px; padding: 0 7px; color: var(--drone-ink); background: #fff; }
