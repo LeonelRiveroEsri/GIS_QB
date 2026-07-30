@@ -1,0 +1,7 @@
+{
+  "widgetTitle": "Imágenes drone",
+  "groupTitle": "Drone",
+  "datePattern": "(\\d{4})[_-](\\d{2})[_-](\\d{2})",
+  "autoSelectLatest": true,
+  "zoomOnSelect": true
+}
