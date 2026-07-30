@@ -33,6 +33,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const [query, setQuery] = React.useState('')
   const [from, setFrom] = React.useState('')
   const [to, setTo] = React.useState('')
+  const [opacityById, setOpacityById] = React.useState<Record<string, number>>({})
   const [detectedGroupTitle, setDetectedGroupTitle] = React.useState('')
   const [status, setStatus] = React.useState<'idle' | 'loading' | 'group' | 'empty' | 'ready'>('idle')
   const collectionHandle = React.useRef<{ remove: () => void }>(undefined)
@@ -157,7 +158,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     if (!chosen) return
     items.forEach(item => {
       item.layer.visible = item.id === id || (compareMode && item.id === compareId)
-      item.layer.opacity = 1
+      item.layer.opacity = opacityById[item.id] ?? 1
     })
     setActiveId(id)
     if (compareId === id) setCompareId(items.find(item => item.id !== id)?.id || '')
@@ -175,16 +176,23 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
         console.warn('No fue posible acercar a la extensión de la imagen seleccionada.', error)
       }
     }
-  }, [items, compareMode, compareId, props.config.zoomOnSelect, jmv])
+  }, [items, compareMode, compareId, opacityById, props.config.zoomOnSelect, jmv])
 
   React.useEffect(() => {
     if (!items.length) return
     items.forEach(item => {
       const isComparison = compareMode && item.id === compareId && item.id !== activeId
       item.layer.visible = item.id === activeId || isComparison
-      item.layer.opacity = 1
+      item.layer.opacity = opacityById[item.id] ?? 1
     })
-  }, [compareMode, compareId, activeId, items])
+  }, [compareMode, compareId, activeId, items, opacityById])
+
+  const cycleOpacity = React.useCallback((item: DatedLayer) => {
+    const current = opacityById[item.id] ?? 1
+    const next = current > 0.75 ? 0.75 : current > 0.5 ? 0.5 : current > 0.25 ? 0.25 : 1
+    item.layer.opacity = next
+    setOpacityById(previous => ({ ...previous, [item.id]: next }))
+  }, [opacityById])
 
   React.useEffect(() => {
     let cancelled = false
@@ -388,26 +396,40 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
           : filtered.map((item, index) => {
             const active = item.id === activeId
             const comparing = compareMode && item.id === compareId && !active
-            return <button
+            const opacity = opacityById[item.id] ?? 1
+            return <div
               key={item.id}
               className={`drone-card${active ? ' is-active' : ''}${comparing ? ' is-compare' : ''}`}
-              onClick={() => compareMode && !active ? setCompareId(item.id) : void selectPrimary(item.id)}
-              title={item.title}
-              aria-pressed={active || comparing}
             >
-              <span className='drone-date-box'><span className='drone-day'>{item.date.getDate()}</span><span className='drone-month'>{month(item.date)}</span></span>
-              <span className='drone-card-main'>
-                <span className='drone-card-title'>{longDate(item.date)}</span>
-                <span className='drone-card-sub'>
-                  <span className='drone-layer-label'>{t('layer')}</span>
-                  <span className='drone-layer-name'>{item.title}</span>
+              <button
+                className='drone-card-select'
+                onClick={() => compareMode && !active ? setCompareId(item.id) : void selectPrimary(item.id)}
+                title={item.title}
+                aria-pressed={active || comparing}
+              >
+                <span className='drone-date-box'><span className='drone-day'>{item.date.getDate()}</span><span className='drone-month'>{month(item.date)}</span></span>
+                <span className='drone-card-main'>
+                  <span className='drone-card-title'>{longDate(item.date)}</span>
+                  <span className='drone-card-sub'>
+                    <span className='drone-layer-label'>{t('layer')}</span>
+                    <span className='drone-layer-name'>{item.title}</span>
+                  </span>
+                  {(index === 0 && item.id === items[0].id) && <span className='drone-badge'>{t('latest')}</span>}
+                  {active && index !== 0 && <span className='drone-badge'>{t('active')}</span>}
+                  {comparing && <span className='drone-badge'>{t('compare')}</span>}
                 </span>
-                {(index === 0 && item.id === items[0].id) && <span className='drone-badge'>{t('latest')}</span>}
-                {active && index !== 0 && <span className='drone-badge'>{t('active')}</span>}
-                {comparing && <span className='drone-badge'>{t('compare')}</span>}
-              </span>
-              <span className='drone-check'><CheckIcon/></span>
-            </button>
+                <span className='drone-check'><CheckIcon/></span>
+              </button>
+              <button
+                className='drone-opacity'
+                onClick={() => cycleOpacity(item)}
+                title={`${t('opacity')}: ${Math.round(opacity * 100)}%`}
+                aria-label={`${t('opacity')} ${item.title}: ${Math.round(opacity * 100)}%`}
+              >
+                <span className='drone-opacity-icon' aria-hidden='true'>◐</span>
+                {Math.round(opacity * 100)}%
+              </button>
+            </div>
           })}
       </main>
 
