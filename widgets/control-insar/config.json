@@ -1,5 +1,5 @@
 {
   "widgetTitle": "Monitoreo InSAR",
   "layerTitlePattern": "DEFORMACION",
-  "maxRecordsPerLayer": 2000
+  "maxRecordsPerLayer": 10000
 }

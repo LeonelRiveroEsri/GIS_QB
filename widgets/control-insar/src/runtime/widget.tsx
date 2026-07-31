@@ -182,12 +182,19 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
       const batches = await Promise.all(layers.map(async layer => {
         await layer.load()
         const oid = layer.objectIdField
-        const result = await layer.queryFeatures({
-          where: '1=1', outFields: ['*'], returnGeometry: true,
-          outSpatialReference: mapView.view.spatialReference,
-          num: Math.max(100, Number(props.config.maxRecordsPerLayer) || 2000)
-        })
-        return result.features.map((graphic, index): InsarRecord => {
+        const objectIds = (await layer.queryObjectIds({ where: '1=1' })).sort((a, b) => Number(a) - Number(b))
+        const recordLimit = Math.max(10000, Number(props.config.maxRecordsPerLayer) || 0)
+        const selectedIds = objectIds.slice(0, recordLimit)
+        const pageSize = Math.max(100, Math.min(1000, Number(layer.capabilities?.query?.maxRecordCount) || 1000))
+        const pages: __esri.Graphic[][] = []
+        for (let offset = 0; offset < selectedIds.length; offset += pageSize) {
+          const result = await layer.queryFeatures({
+            objectIds: selectedIds.slice(offset, offset + pageSize), outFields: ['*'], returnGeometry: true,
+            outSpatialReference: mapView.view.spatialReference
+          })
+          pages.push(result.features)
+        }
+        return pages.flat().map((graphic, index): InsarRecord => {
           const a = graphic.attributes || {}; const objectId = Number(a[oid] ?? index)
           return {
             key: `${layer.id}-${objectId}`, objectId, layer, graphic,
