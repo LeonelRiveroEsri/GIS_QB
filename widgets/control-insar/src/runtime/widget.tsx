@@ -53,15 +53,79 @@ const MiniChart = ({ records, onSelect }: { records: InsarRecord[], onSelect: (r
   const values = points.map(point => point.value as number)
   const min = Math.min(0, ...values); const max = Math.max(0, ...values); const range = max - min || 1
   const width = Math.max(300, points.length * 14)
-  const coords = points.map((record, index) => ({ record, x: 12 + index * ((width - 24) / (points.length - 1)), y: 108 - (((record.value as number) - min) / range) * 92 }))
+  const coords = points.map((record, index) => ({ record, x: 8 + index * ((width - 16) / (points.length - 1)), y: 108 - (((record.value as number) - min) / range) * 92 }))
   const line = coords.map(p => `${p.x},${p.y}`).join(' ')
   const zeroY = 108 - ((0 - min) / range) * 92
-  const area = `12,${zeroY} ${line} ${width - 12},${zeroY}`
-  return <div className='insar-chart-scroll'><svg className='insar-chart' width={width} viewBox={`0 0 ${width} 120`} preserveAspectRatio='none' aria-label='Deformación por registro'>
-    <line className='insar-axis' x1='8' y1={zeroY} x2={width - 8} y2={zeroY}/><line className='insar-axis' x1='8' y1='16' x2='8' y2='108'/>
-    <polygon className='insar-area' points={area}/><polyline className='insar-line' points={line}/>
-    {coords.map(point => <circle key={point.record.key} className='insar-dot is-action' cx={point.x} cy={point.y} r='3.2' tabIndex={0} onClick={() => onSelect(point.record)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') onSelect(point.record) }}><title>{point.record.name}: {point.record.value?.toFixed(1)} cm · {point.record.sector} · {point.record.type}</title></circle>)}
-  </svg></div>
+  const area = `8,${zeroY} ${line} ${width - 8},${zeroY}`
+  const ticks = Array.from({ length: 5 }, (_, index) => {
+    const value = max - (range * index / 4)
+    return { value, y: 16 + (92 * index / 4) }
+  })
+  const formatTick = (value: number) => Math.abs(value) >= 100 ? value.toFixed(0) : Math.abs(value) >= 10 ? value.toFixed(1) : value.toFixed(2).replace(/\.00$/, '')
+  return <div className='insar-chart-frame'>
+    <svg className='insar-y-axis' viewBox='0 0 45 120' aria-hidden='true'>
+      {ticks.map(tick => <text key={tick.y} x='38' y={tick.y + 3} textAnchor='end'>{formatTick(tick.value)}</text>)}
+      <text x='5' y='12' className='insar-unit'>cm</text><line x1='44' y1='16' x2='44' y2='108'/>
+    </svg>
+    <div className='insar-chart-scroll'><svg className='insar-chart' width={width} viewBox={`0 0 ${width} 120`} preserveAspectRatio='none' aria-label='Deformación por registro'>
+      {ticks.map(tick => <line key={tick.y} className={`insar-grid-line${Math.abs(tick.value) < range / 1000 ? ' zero' : ''}`} x1='0' y1={tick.y} x2={width} y2={tick.y}/>)}
+      <line className='insar-axis zero' x1='0' y1={zeroY} x2={width} y2={zeroY}/>
+      <polygon className='insar-area' points={area}/><polyline className='insar-line' points={line}/>
+      {coords.map(point => <circle key={point.record.key} className='insar-dot is-action' cx={point.x} cy={point.y} r='3.2' tabIndex={0} onClick={() => onSelect(point.record)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') onSelect(point.record) }}><title>{point.record.name}: {point.record.value?.toFixed(1)} cm · {point.record.sector} · {point.record.type}</title></circle>)}
+    </svg></div>
+  </div>
+}
+
+const SectorRanking = ({ records, onSelect }: { records: InsarRecord[], onSelect: (sector: string) => void }) => {
+  const rows = React.useMemo(() => {
+    const grouped = new Map<string, { maximum: number, sum: number, count: number }>()
+    records.forEach(record => {
+      if (!record.sector || record.value == null) return
+      const current = grouped.get(record.sector) || { maximum: 0, sum: 0, count: 0 }
+      current.maximum = Math.max(current.maximum, Math.abs(record.value)); current.sum += Math.abs(record.value); current.count += 1
+      grouped.set(record.sector, current)
+    })
+    return [...grouped.entries()].map(([sector, item]) => ({ sector, maximum: item.maximum, average: item.sum / item.count, count: item.count })).sort((a, b) => b.maximum - a.maximum)
+  }, [records])
+  const scale = Math.max(1, ...rows.map(row => row.maximum))
+  if (!rows.length) return <div className='insar-empty insar-analysis-empty'>No hay sectores con valores para comparar.</div>
+  return <div className='insar-ranking'>{rows.map((row, index) => <button key={row.sector} className='insar-rank-row' onClick={() => onSelect(row.sector)}>
+    <span className='insar-rank-position'>{index + 1}</span><span className='insar-rank-copy'><strong>{row.sector}</strong><span><i style={{ width: `${Math.max(3, row.maximum / scale * 100)}%` }}/></span><small>{row.count} registros · promedio abs. {row.average.toFixed(2)} cm</small></span><b>{row.maximum.toFixed(2)}<small> cm</small></b>
+  </button>)}</div>
+}
+
+const TemporalHeatmap = ({ records, onSelect }: { records: InsarRecord[], onSelect: (sector: string, date: Date) => void }) => {
+  const model = React.useMemo(() => {
+    const sectors = [...new Set(records.map(record => record.sector).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'))
+    const months = [...new Set(records.filter(record => record.date).map(record => `${record.date.getFullYear()}-${String(record.date.getMonth() + 1).padStart(2, '0')}`))].sort()
+    const cells = new Map<string, { maximum: number, count: number, date: Date }>()
+    records.forEach(record => {
+      if (!record.sector || !record.date || record.value == null) return
+      const month = `${record.date.getFullYear()}-${String(record.date.getMonth() + 1).padStart(2, '0')}`; const key = `${record.sector}\u0000${month}`; const current = cells.get(key); const value = Math.abs(record.value)
+      cells.set(key, { maximum: Math.max(current?.maximum || 0, value), count: (current?.count || 0) + 1, date: record.date })
+    })
+    return { sectors, months, cells, maximum: Math.max(1, ...[...cells.values()].map(cell => cell.maximum)) }
+  }, [records])
+  if (!model.sectors.length || !model.months.length) return <div className='insar-empty insar-analysis-empty'>No hay fechas suficientes para construir el mapa de calor.</div>
+  return <div className='insar-heat-scroll'><div className='insar-heatmap' style={{ gridTemplateColumns: `110px repeat(${model.months.length}, 42px)` }}>
+    <div className='insar-heat-corner'>Sector / mes</div>{model.months.map(month => <div key={month} className='insar-heat-month'>{month.slice(5)}<small>{month.slice(2, 4)}</small></div>)}
+    {model.sectors.map(sectorName => <React.Fragment key={sectorName}><button className='insar-heat-sector' onClick={() => onSelect(sectorName, new Date())}>{sectorName}</button>{model.months.map(month => {
+      const cell = model.cells.get(`${sectorName}\u0000${month}`); const intensity = cell ? .12 + .88 * (cell.maximum / model.maximum) : 0
+      return <button key={month} disabled={!cell} className='insar-heat-cell' style={cell ? { backgroundColor: `rgba(8,127,117,${intensity})`, color: intensity > .55 ? '#fff' : '#173438' } : undefined} onClick={() => cell && onSelect(sectorName, cell.date)} title={cell ? `${sectorName} · ${month}: máximo abs. ${cell.maximum.toFixed(2)} cm (${cell.count} registros)` : 'Sin datos'}>{cell ? cell.maximum.toFixed(cell.maximum >= 10 ? 0 : 1) : '·'}</button>
+    })}</React.Fragment>)}
+  </div></div>
+}
+
+const DeformationHistogram = ({ records, onSelect }: { records: InsarRecord[], onSelect: (record: InsarRecord) => void }) => {
+  const bins = React.useMemo(() => {
+    const valid = records.filter(record => record.value != null); if (!valid.length) return []
+    const values = valid.map(record => record.value as number); const min = Math.min(...values); const max = Math.max(...values); const count = Math.min(12, Math.max(5, Math.ceil(Math.sqrt(valid.length)))); const size = (max - min || 1) / count
+    const result = Array.from({ length: count }, (_, index) => ({ from: min + index * size, to: index === count - 1 ? max : min + (index + 1) * size, records: [] as InsarRecord[] }))
+    valid.forEach(record => result[Math.min(count - 1, Math.floor(((record.value as number) - min) / size))].records.push(record)); return result
+  }, [records])
+  const maximum = Math.max(1, ...bins.map(bin => bin.records.length))
+  if (!bins.length) return <div className='insar-empty insar-analysis-empty'>No hay valores para analizar.</div>
+  return <div className='insar-histogram'>{bins.map((bin, index) => <button key={index} className='insar-hist-bin' disabled={!bin.records.length} onClick={() => bin.records[0] && onSelect(bin.records[0])} title={`${bin.from.toFixed(2)} a ${bin.to.toFixed(2)} cm · ${bin.records.length} registros`}><span>{bin.records.length}</span><i style={{ height: `${Math.max(2, bin.records.length / maximum * 100)}%` }}/><small>{bin.from.toFixed(1)}</small></button>)}</div>
 }
 
 const Widget = (props: AllWidgetProps<IMConfig>) => {
@@ -69,7 +133,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const [records, setRecords] = React.useState<InsarRecord[]>([])
   const [images, setImages] = React.useState<DatedImage[]>([])
   const [activeImageId, setActiveImageId] = React.useState('')
-  const [tab, setTab] = React.useState<'indicators' | 'images'>('indicators')
+  const [tab, setTab] = React.useState<'indicators' | 'analysis' | 'images'>('indicators')
   const [compareMode, setCompareMode] = React.useState(false)
   const [compareImageId, setCompareImageId] = React.useState('')
   const [opacityById, setOpacityById] = React.useState<Record<string, number>>({})
@@ -381,7 +445,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
         </div>
         <div className='insar-actions'><button className='insar-clear' onClick={clear}>Limpiar filtros</button><span className='insar-count'>{filtered.length} registros · {filteredImages.length} imágenes</span></div>
       </section>
-      <nav className='insar-tabs'><button className={tab === 'indicators' ? 'active' : ''} onClick={() => setTab('indicators')}>Indicadores</button><button className={tab === 'images' ? 'active' : ''} onClick={() => setTab('images')}>Imágenes disponibles <span>{filteredImages.length}</span></button></nav>
+      <nav className='insar-tabs'><button className={tab === 'indicators' ? 'active' : ''} onClick={() => setTab('indicators')}>Indicadores</button><button className={tab === 'analysis' ? 'active' : ''} onClick={() => setTab('analysis')}>Análisis</button><button className={tab === 'images' ? 'active' : ''} onClick={() => setTab('images')}>Imágenes <span>{filteredImages.length}</span></button></nav>
       {tab === 'indicators' && <main className='insar-content'>
         <div className='insar-kpis'>
           <div className='insar-kpi'><span>Promedio</span><strong>{average == null ? '—' : average.toFixed(2)}</strong><small>cm</small></div>
@@ -396,6 +460,11 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
           </button>)}</div>
           {!filtered.length && <div className='insar-empty' style={{ minHeight: 120 }}>No hay resultados para los filtros seleccionados.</div>}
         </section>
+      </main>}
+      {tab === 'analysis' && <main className='insar-content insar-analysis'>
+        <section className='insar-panel'><div className='insar-panel-head'><h3>Ranking de sectores</h3><span>Máximo absoluto · clic para filtrar</span></div><SectorRanking records={filtered} onSelect={value => setSector(value)}/></section>
+        <section className='insar-panel'><div className='insar-panel-head'><h3>Intensidad sector–tiempo</h3><span>Máximo absoluto por mes</span></div><TemporalHeatmap records={filtered} onSelect={(value, date) => { setSector(value); setYear(String(date.getFullYear())); setFrom(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`); setTo(iso(new Date(date.getFullYear(), date.getMonth() + 1, 0))) }}/></section>
+        <section className='insar-panel'><div className='insar-panel-head'><h3>Distribución de deformaciones</h3><span>Frecuencia por rango · clic para ubicar</span></div><DeformationHistogram records={filtered} onSelect={record => void selectRecord(record)}/></section>
       </main>}
       {tab === 'images' && <main className='insar-images'>
         <div className='insar-image-list'>{filteredImages.map((image, index) => {
