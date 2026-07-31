@@ -1,0 +1,17 @@
+{
+  "name": "control-insar",
+  "label": "Control InSAR",
+  "type": "widget",
+  "version": "1.5.0",
+  "exbVersion": "1.20.0",
+  "author": "TECK",
+  "description": "Monitoreo de deformaciones InSAR con filtros, indicadores, gráfico y sincronización con el mapa.",
+  "copyright": "",
+  "license": "",
+  "dependency": "jimu-arcgis",
+  "properties": {},
+  "defaultSize": {
+    "width": 480,
+    "height": 720
+  }
+}
