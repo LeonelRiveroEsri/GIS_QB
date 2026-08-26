@@ -2,7 +2,7 @@
   "name": "control-insar",
   "label": "Control InSAR",
   "type": "widget",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "exbVersion": "1.20.0",
   "author": "TECK",
   "description": "Monitoreo de deformaciones InSAR con filtros, indicadores, gráfico y sincronización con el mapa.",
