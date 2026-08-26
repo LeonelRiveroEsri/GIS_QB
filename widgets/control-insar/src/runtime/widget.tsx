@@ -246,6 +246,13 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const filteredImages = React.useMemo(() => images.filter(image =>
     (!sectorImageIds || sectorImageIds.has(image.id)) && (!year || String(image.date.getFullYear()) === year) && (!from || iso(image.date) >= from) && (!to || iso(image.date) <= to)
   ), [images, sectorImageIds, year, from, to])
+  const adjacentComparison = React.useMemo(() => {
+    const activeIndex = filteredImages.findIndex(image => image.id === activeImageId)
+    if (activeIndex < 0) return null
+    return filteredImages[activeIndex + 1] || filteredImages[activeIndex - 1] || null
+  }, [filteredImages, activeImageId])
+  const activeImage = React.useMemo(() => images.find(image => image.id === activeImageId), [images, activeImageId])
+  const comparisonImage = React.useMemo(() => filteredImages.find(image => image.id === compareImageId) || adjacentComparison, [filteredImages, compareImageId, adjacentComparison])
   const years = React.useMemo(() => [...new Set([
     ...records.map(record => record.date?.getFullYear()),
     ...images.map(image => image.date.getFullYear())
@@ -303,8 +310,6 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   }
   const selectImage = (id: string) => {
     setActiveImageId(id)
-    if (compareImageId === id) setCompareImageId(filteredImages.find(image => image.id !== id)?.id || '')
-    images.forEach(image => { image.layer.visible = image.id === id || (compareMode && image.id === compareImageId) })
   }
   const cycleOpacity = (image: DatedImage) => {
     const current = opacityById[image.id] ?? 1
@@ -321,11 +326,20 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     }
   }, [filteredImages, activeImageId, images])
   React.useEffect(() => {
+    if (filteredImages.length < 2) {
+      setCompareImageId('')
+      setCompareMode(false)
+      return
+    }
+    const comparisonIsValid = filteredImages.some(image => image.id === compareImageId) && compareImageId !== activeImageId
+    if (!comparisonIsValid) setCompareImageId(adjacentComparison?.id || '')
+  }, [filteredImages, activeImageId, compareImageId, adjacentComparison])
+  React.useEffect(() => {
     images.forEach(image => {
-      image.layer.visible = image.id === activeImageId || (compareMode && image.id === compareImageId)
+      image.layer.visible = image.id === activeImageId || (compareMode && image.id === comparisonImage?.id)
       image.layer.opacity = opacityById[image.id] ?? 1
     })
-  }, [images, activeImageId, compareMode, compareImageId, opacityById])
+  }, [images, activeImageId, compareMode, comparisonImage, opacityById])
 
   React.useEffect(() => {
     let cancelled = false
@@ -333,7 +347,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
       removeSwipe()
       if (!compareMode || !jmv?.view) return
       const primary = images.find(image => image.id === activeImageId)
-      const comparison = images.find(image => image.id === compareImageId)
+      const comparison = filteredImages.find(image => image.id === compareImageId) || adjacentComparison
       if (!primary || !comparison || primary.id === comparison.id) return
       await Promise.all([primary.layer.load(), comparison.layer.load()])
       const [ClipRect] = await loadArcGISJSAPIModules(['esri/views/layers/support/ClipRect']) as [typeof import('esri/views/layers/support/ClipRect').default]
@@ -366,7 +380,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     }
     void createSwipe().catch(error => console.warn('No fue posible activar la comparación Swipe.', error))
     return () => { cancelled = true; removeSwipe() }
-  }, [compareMode, activeImageId, compareImageId, images, jmv, removeSwipe])
+  }, [compareMode, activeImageId, compareImageId, images, filteredImages, adjacentComparison, jmv, removeSwipe])
 
   const flashSector = React.useCallback(async (sectorName: string) => {
     clearSectorFlash()
@@ -487,8 +501,11 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
         })}{!filteredImages.length && <div className='insar-empty'>No hay imágenes para el periodo seleccionado.</div>}</div>
         <div className='insar-image-footer'>
           <div className='insar-image-nav'><button disabled={filteredImages.findIndex(i => i.id === activeImageId) >= filteredImages.length - 1} onClick={() => selectImage(filteredImages[filteredImages.findIndex(i => i.id === activeImageId) + 1]?.id)}>‹</button><span><strong>{images.find(i => i.id === activeImageId)?.date.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }) || '—'}</strong>Imagen {Math.max(0, filteredImages.findIndex(i => i.id === activeImageId)) + 1} de {filteredImages.length}</span><button disabled={filteredImages.findIndex(i => i.id === activeImageId) <= 0} onClick={() => selectImage(filteredImages[filteredImages.findIndex(i => i.id === activeImageId) - 1]?.id)}>›</button></div>
-          <div className='insar-compare-row'><span><strong>Comparar</strong><small>Seleccione una segunda imagen.</small></span><button className={`insar-toggle${compareMode ? ' on' : ''}`} onClick={() => setCompareMode(!compareMode)}><i/></button></div>
-          {compareMode && <div className='insar-swipe-state'>Comparación Swipe activa en el mapa</div>}
+          <div className='insar-compare-row'><span><strong>Comparar imágenes filtradas</strong><small>{filteredImages.length < 2 ? 'Se necesitan al menos dos imágenes dentro del filtro.' : 'Al activar se utiliza automáticamente la fecha anterior disponible.'}</small></span><button disabled={filteredImages.length < 2} className={`insar-toggle${compareMode ? ' on' : ''}`} onClick={() => { if (!compareMode && adjacentComparison) setCompareImageId(adjacentComparison.id); setCompareMode(!compareMode) }} aria-label={compareMode ? 'Desactivar comparación' : 'Activar comparación'}><i/></button></div>
+          {filteredImages.length >= 2 && activeImage && (comparisonImage || adjacentComparison) && <div className={`insar-compare-summary${compareMode ? ' active' : ''}`}>
+            <span><small>Principal</small><strong>{activeImage.date.toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}</strong></span><b>↔</b><span><small>Comparación</small><strong>{(comparisonImage || adjacentComparison).date.toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}</strong></span>
+          </div>}
+          {compareMode && <div className='insar-swipe-state'>Comparación Swipe activa · puede elegir otra tarjeta dentro del filtro</div>}
         </div>
       </main>}
     </>}
