@@ -11,7 +11,6 @@ interface InsarRecord {
   name: string
   sector: string
   type: string
-  period: string
   textDate: string
   date: Date | null
   value: number | null
@@ -38,14 +37,28 @@ const dateValue = (attributes: Record<string, any>) => {
   const date = new Date(raw)
   return Number.isNaN(date.getTime()) ? null : date
 }
-const iso = (date: Date | null) => date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : ''
-const unique = (records: InsarRecord[], field: 'sector' | 'type' | 'period') => [...new Set(records.map(record => record[field]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'))
+const unique = (records: InsarRecord[], field: 'sector' | 'type') => [...new Set(records.map(record => record[field]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'))
 const imageDate = (title: string) => {
   const match = title.match(/(\d{4})[_-](\d{2})[_-](\d{2})/)
   if (!match) return null
   const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
   return Number.isNaN(date.getTime()) ? null : date
 }
+const MONTHS = Array.from({ length: 12 }, (_, index) => ({
+  value: String(index + 1),
+  label: new Date(2000, index, 1).toLocaleDateString('es-CL', { month: 'long' })
+}))
+const exportFileName = (extension: 'csv' | 'xlsx') => `control-insar-${new Date().toISOString().slice(0, 10)}.${extension}`
+const exportRows = (records: InsarRecord[]) => records.map(record => Object.fromEntries(
+  Object.entries(record.attributes).filter(([field]) => !/^(geometry|shape|shape__area|shape__length)$/i.test(field))
+))
+const downloadBlob = (content: BlobPart, fileName: string, type: string) => {
+  const url = URL.createObjectURL(new Blob([content], { type }))
+  const anchor = document.createElement('a')
+  anchor.href = url; anchor.download = fileName; document.body.appendChild(anchor); anchor.click(); anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+const csvValue = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`
 
 const MiniChart = ({ records, onSelect }: { records: InsarRecord[], onSelect: (record: InsarRecord) => void }) => {
   const points = React.useMemo(() => records.filter(record => record.value != null).slice(0, 1000), [records])
@@ -141,10 +154,10 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const [status, setStatus] = React.useState<'map' | 'loading' | 'ready' | 'layers' | 'error'>('map')
   const [sector, setSector] = React.useState('')
   const [type, setType] = React.useState('')
-  const [period, setPeriod] = React.useState('')
   const [year, setYear] = React.useState('')
-  const [from, setFrom] = React.useState('')
-  const [to, setTo] = React.useState('')
+  const [month, setMonth] = React.useState('')
+  const [exporting, setExporting] = React.useState<'csv' | 'xlsx' | ''>('')
+  const [exportError, setExportError] = React.useState('')
   const highlightRef = React.useRef<{ remove: () => void }>()
   const recordFlashTimersRef = React.useRef<number[]>([])
   const selectedGraphicRef = React.useRef<__esri.Graphic>()
@@ -200,7 +213,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
             key: `${layer.id}-${objectId}`, objectId, layer, graphic,
             name: text(a.NOMBRE) || text(a.TEXT) || `Registro ${objectId}`,
             sector: text(a.SECTOR), type: text(a.TIPO) || layer.title.replace(/DEFORMACION\s*/i, '').trim(),
-            period: text(a.PERIODO), textDate: text(a.TEXT), date: dateValue(a), value: number(a.DEFORMACION_CM), attributes: a
+            textDate: text(a.TEXT), date: dateValue(a), value: number(a.DEFORMACION_CM), attributes: a
           }
         })
       }))
@@ -239,13 +252,14 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   }, [removeSwipe, clearSectorFlash, jmv])
 
   const filtered = React.useMemo(() => records.filter(record =>
-    (!sector || record.sector === sector) && (!type || record.type === type) && (!period || record.period === period) &&
+    (!sector || record.sector === sector) && (!type || record.type === type) &&
     (!year || (record.date && String(record.date.getFullYear()) === year)) &&
-    (!from || (record.date && iso(record.date) >= from)) && (!to || (record.date && iso(record.date) <= to))
-  ), [records, sector, type, period, year, from, to])
+    (!month || (record.date && String(record.date.getMonth() + 1) === month))
+  ), [records, sector, type, year, month])
   const filteredImages = React.useMemo(() => images.filter(image =>
-    (!sectorImageIds || sectorImageIds.has(image.id)) && (!year || String(image.date.getFullYear()) === year) && (!from || iso(image.date) >= from) && (!to || iso(image.date) <= to)
-  ), [images, sectorImageIds, year, from, to])
+    (!sectorImageIds || sectorImageIds.has(image.id)) && (!year || String(image.date.getFullYear()) === year) &&
+    (!month || String(image.date.getMonth() + 1) === month)
+  ), [images, sectorImageIds, year, month])
   const adjacentComparison = React.useMemo(() => {
     const activeIndex = filteredImages.findIndex(image => image.id === activeImageId)
     if (activeIndex < 0) return null
@@ -261,6 +275,31 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const average = values.length ? values.reduce((a, b) => a + b, 0) / values.length : null
   const maximum = values.length ? Math.max(...values.map(Math.abs)) : null
   const latest = filtered.map(r => r.date).filter((date): date is Date => Boolean(date)).sort((a, b) => b.getTime() - a.getTime())[0]
+  const rowsForExport = React.useMemo(() => exportRows(filtered), [filtered])
+  const downloadCsv = () => {
+    if (!rowsForExport.length) return
+    setExportError(''); setExporting('csv')
+    try {
+      const headers = [...new Set(rowsForExport.flatMap(row => Object.keys(row)))]
+      const lines = [headers.map(csvValue).join(';'), ...rowsForExport.map(row => headers.map(field => csvValue(row[field])).join(';'))]
+      downloadBlob(`\ufeff${lines.join('\r\n')}`, exportFileName('csv'), 'text/csv;charset=utf-8')
+    } catch (error) {
+      console.error('No fue posible exportar CSV.', error); setExportError('No fue posible generar el archivo CSV.')
+    } finally { setExporting('') }
+  }
+  const downloadExcel = async () => {
+    if (!rowsForExport.length) return
+    setExportError(''); setExporting('xlsx')
+    try {
+      const XLSX = await import('xlsx')
+      const worksheet = XLSX.utils.json_to_sheet(rowsForExport)
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Datos InSAR')
+      XLSX.writeFile(workbook, exportFileName('xlsx'))
+    } catch (error) {
+      console.error('No fue posible exportar Excel.', error); setExportError('No fue posible generar el archivo Excel.')
+    } finally { setExporting('') }
+  }
 
   const selectRecord = async (record: InsarRecord) => {
     if (!jmv?.view) return
@@ -449,7 +488,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     void applySectorAoi().catch(error => console.warn('No fue posible aplicar el AOI del sector.', error))
     return () => { ++aoiRequestRef.current }
   }, [sector, records, images, jmv, flashSector])
-  const clear = () => { setSector(''); setType(''); setPeriod(''); setYear(''); setFrom(''); setTo('') }
+  const clear = () => { setSector(''); setType(''); setYear(''); setMonth('') }
 
   return <div css={getStyle()} className='insar-shell'>
     {props.useMapWidgetIds?.[0] && <JimuMapViewComponent useMapWidgetId={props.useMapWidgetIds[0]} onActiveViewChange={setJmv}/>} 
@@ -458,11 +497,9 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
       <section className='insar-filters'>
         <div className='insar-grid'>
           <div className='insar-field'><label>Sector</label><select value={sector} onChange={e => setSector(e.target.value)}><option value=''>Todos</option>{unique(records, 'sector').map(v => <option key={v}>{v}</option>)}</select></div>
-          <div className='insar-field'><label>Tipo</label><select value={type} onChange={e => setType(e.target.value)}><option value=''>Todos</option>{unique(records, 'type').map(v => <option key={v}>{v}</option>)}</select></div>
-          <div className='insar-field'><label>Periodo</label><select value={period} onChange={e => setPeriod(e.target.value)}><option value=''>Todos</option>{unique(records, 'period').map(v => <option key={v}>{v}</option>)}</select></div>
-          <div className='insar-field'><label>Año · datos e imágenes</label><select value={year} onChange={e => setYear(e.target.value)}><option value=''>Todos</option>{years.map(v => <option key={v} value={String(v)}>{v}</option>)}</select></div>
-          <div className='insar-field'><label>Desde</label><input type='date' value={from} onChange={e => setFrom(e.target.value)}/></div>
-          <div className='insar-field'><label>Hasta</label><input type='date' value={to} onChange={e => setTo(e.target.value)}/></div>
+          <div className='insar-field'><label>Tipo deformación</label><select value={type} onChange={e => setType(e.target.value)}><option value=''>Todos</option>{unique(records, 'type').map(v => <option key={v}>{v}</option>)}</select></div>
+          <div className='insar-field'><label>Año</label><select value={year} onChange={e => setYear(e.target.value)}><option value=''>Todos</option>{years.map(v => <option key={v} value={String(v)}>{v}</option>)}</select></div>
+          <div className='insar-field'><label>Mes</label><select value={month} onChange={e => setMonth(e.target.value)}><option value=''>Todos</option>{MONTHS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
         </div>
         <div className='insar-actions'><button className='insar-clear' onClick={clear}>Limpiar filtros</button><span className='insar-count'>{filtered.length} registros · {filteredImages.length} imágenes</span></div>
       </section>
@@ -474,17 +511,19 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
           <div className='insar-kpi'><span>Última fecha</span><strong style={{ fontSize: 12 }}>{latest ? latest.toLocaleDateString('es-CL') : '—'}</strong><small>{new Set(filtered.map(r => r.sector).filter(Boolean)).size} sectores</small></div>
         </div>
         <section className='insar-panel'><div className='insar-panel-head'><h3>Deformación por punto evaluado</h3><span>{Math.min(filtered.length, 1000)} puntos · clic para ubicar</span></div><MiniChart records={filtered} onSelect={record => void selectRecord(record)}/></section>
-        <section className='insar-panel'><div className='insar-panel-head'><h3>Resultados</h3><span>Seleccione para ubicar</span></div>
-          <div className='insar-list'>{filtered.slice(0, 100).map(record => <button className='insar-row' key={record.key} onClick={() => void selectRecord(record)}>
-            <span><strong>{record.name}</strong><span className='insar-row-meta'>{record.sector || 'Sin sector'} · {record.date ? record.date.toLocaleDateString('es-CL') : record.textDate || 'Sin fecha'}</span></span>
-            <span className='insar-value'>{record.value == null ? '—' : `${record.value.toFixed(2)} cm`}<span className='insar-type'>{record.type}</span></span>
-          </button>)}</div>
-          {!filtered.length && <div className='insar-empty' style={{ minHeight: 120 }}>No hay resultados para los filtros seleccionados.</div>}
+        <section className='insar-panel insar-export-panel'><div className='insar-panel-head'><h3>Descargar datos</h3><span>{filtered.length.toLocaleString('es-CL')} registros filtrados</span></div>
+          <p>Exporte los atributos de la selección actual. Los archivos no incluyen geometrías.</p>
+          <div className='insar-export-actions'>
+            <button className='insar-export-button excel' disabled={!rowsForExport.length || Boolean(exporting)} onClick={() => void downloadExcel()}><span className='insar-export-icon' aria-hidden='true'>X</span><span><strong>{exporting === 'xlsx' ? 'Generando Excel…' : 'Descargar Excel'}</strong><small>Libro .xlsx para análisis</small></span><b aria-hidden='true'>↓</b></button>
+            <button className='insar-export-button csv' disabled={!rowsForExport.length || Boolean(exporting)} onClick={downloadCsv}><span className='insar-export-icon' aria-hidden='true'>CSV</span><span><strong>{exporting === 'csv' ? 'Generando CSV…' : 'Descargar CSV'}</strong><small>Texto delimitado compatible</small></span><b aria-hidden='true'>↓</b></button>
+          </div>
+          {exportError && <div className='insar-export-error'>{exportError}</div>}
+          {!rowsForExport.length && <div className='insar-export-empty'>No hay registros para exportar con los filtros seleccionados.</div>}
         </section>
       </main>}
       {tab === 'analysis' && <main className='insar-content insar-analysis'>
         <section className='insar-panel'><div className='insar-panel-head'><h3>Ranking de sectores</h3><span>Máximo absoluto · clic para filtrar</span></div><SectorRanking records={filtered} onSelect={value => setSector(value)}/></section>
-        <section className='insar-panel'><div className='insar-panel-head'><h3>Intensidad sector–tiempo</h3><span>Máximo absoluto por mes</span></div><TemporalHeatmap records={filtered} onSelect={(value, date) => { setSector(value); setYear(String(date.getFullYear())); setFrom(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`); setTo(iso(new Date(date.getFullYear(), date.getMonth() + 1, 0))) }}/></section>
+        <section className='insar-panel'><div className='insar-panel-head'><h3>Intensidad sector–tiempo</h3><span>Máximo absoluto por mes</span></div><TemporalHeatmap records={filtered} onSelect={(value, date) => { setSector(value); setYear(String(date.getFullYear())); setMonth(String(date.getMonth() + 1)) }}/></section>
         <section className='insar-panel'><div className='insar-panel-head'><h3>Distribución de deformaciones</h3><span>Frecuencia por rango · clic para ubicar</span></div><DeformationHistogram records={filtered} onSelect={record => void selectRecord(record)}/></section>
       </main>}
       {tab === 'images' && <main className='insar-images'>
@@ -498,7 +537,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
             </button>
             <button className='insar-opacity' onClick={() => cycleOpacity(image)}>◐ {Math.round(opacity * 100)}%</button>
           </div>
-        })}{!filteredImages.length && <div className='insar-empty'>No hay imágenes para el periodo seleccionado.</div>}</div>
+        })}{!filteredImages.length && <div className='insar-empty'>No hay imágenes para los filtros seleccionados.</div>}</div>
         <div className='insar-image-footer'>
           <div className='insar-image-nav'><button disabled={filteredImages.findIndex(i => i.id === activeImageId) >= filteredImages.length - 1} onClick={() => selectImage(filteredImages[filteredImages.findIndex(i => i.id === activeImageId) + 1]?.id)}>‹</button><span><strong>{images.find(i => i.id === activeImageId)?.date.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }) || '—'}</strong>Imagen {Math.max(0, filteredImages.findIndex(i => i.id === activeImageId)) + 1} de {filteredImages.length}</span><button disabled={filteredImages.findIndex(i => i.id === activeImageId) <= 0} onClick={() => selectImage(filteredImages[filteredImages.findIndex(i => i.id === activeImageId) - 1]?.id)}>›</button></div>
           <div className='insar-compare-row'><span><strong>Comparar imágenes filtradas</strong><small>{filteredImages.length < 2 ? 'Se necesitan al menos dos imágenes dentro del filtro.' : 'Al activar se utiliza automáticamente la fecha anterior disponible.'}</small></span><button disabled={filteredImages.length < 2} className={`insar-toggle${compareMode ? ' on' : ''}`} onClick={() => { if (!compareMode && adjacentComparison) setCompareImageId(adjacentComparison.id); setCompareMode(!compareMode) }} aria-label={compareMode ? 'Desactivar comparación' : 'Activar comparación'}><i/></button></div>
