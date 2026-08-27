@@ -60,13 +60,66 @@
     pre {
       position: relative;
       overflow-x: auto;
-      padding: 18px;
+      padding: 48px 18px 18px;
       border-radius: 10px;
       color: #e6edf7;
       background: var(--code);
       font: 14px/1.55 Consolas, "Cascadia Code", monospace;
       white-space: pre;
     }
+
+    .environment-switcher {
+      position: sticky;
+      z-index: 20;
+      top: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 18px 20px;
+      border: 2px solid var(--blue);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(25, 48, 82, .16);
+    }
+
+    .environment-switcher h2 { margin: 0 0 3px; font-size: 1.15rem; }
+    .environment-switcher p { margin: 0; color: var(--muted); }
+    .environment-options { display: flex; gap: 8px; }
+    .environment-option, .copy-command {
+      border: 1px solid #9eb7d8;
+      border-radius: 8px;
+      color: var(--navy);
+      background: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+    }
+
+    .environment-option { min-width: 150px; padding: 10px 14px; text-align: left; }
+    .environment-option small { display: block; margin-top: 2px; font-weight: 500; }
+    .environment-option[aria-pressed="true"] {
+      border-color: var(--blue);
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 0 0 0 2px rgba(9, 105, 218, .16);
+    }
+
+    .copy-command {
+      position: absolute;
+      z-index: 2;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      border-color: #53647d;
+      color: #e6edf7;
+      background: #1b2940;
+      font-size: .8rem;
+    }
+
+    .copy-command:hover { background: #29405f; }
+    .copy-command.copied { border-color: #38c98a; color: #8ef0be; }
 
     .callout {
       margin: 18px 0;
@@ -141,6 +194,9 @@
       .flow div { min-height: 58px; padding: 8px 10px 8px 62px; text-align: left; }
       .flow div::before { top: 8px; left: 22px; transform: none; }
       .flow div:not(:last-child)::after { top: 48px; left: 40px; width: 3px; height: 26px; }
+      .environment-switcher { position: static; grid-template-columns: 1fr; }
+      .environment-options { flex-direction: column; }
+      .environment-option { width: 100%; }
     }
   </style>
 </head>
@@ -153,6 +209,24 @@
   </header>
 
   <main>
+    <aside class="environment-switcher" aria-labelledby="environment-title">
+      <div>
+        <h2 id="environment-title">Seleccionar ambiente para los comandos</h2>
+        <p>La opción elegida actualiza automáticamente todas las rutas del manual.</p>
+      </div>
+      <div class="environment-options" role="group" aria-label="Ambiente de trabajo">
+        <button class="environment-option" type="button" data-environment="workshop" aria-pressed="true">
+          Taller
+          <small>D:\EXP_TALLER</small>
+        </button>
+        <button class="environment-option" type="button" data-environment="client" aria-pressed="false">
+          Cliente
+          <small>C:\EXP</small>
+        </button>
+      </div>
+    </aside>
+    <noscript><div class="callout danger">Este manual necesita JavaScript para cambiar las rutas entre Taller y Cliente. Con JavaScript desactivado se muestran las rutas base originales.</div></noscript>
+
     <nav aria-label="Contenido">
       <h2>Contenido</h2>
       <ul>
@@ -566,5 +640,86 @@ git status -sb</code></pre>
   </main>
 
   <footer>GIS_QB · Guía de ambiente colaborativo para ArcGIS Experience Builder Developer Edition</footer>
+  <script>
+    (() => {
+      const environments = {
+        workshop: { windows: 'D:\\EXP_TALLER', slash: 'D:/EXP_TALLER', label: 'Taller' },
+        client: { windows: 'C:\\EXP', slash: 'C:/EXP', label: 'Cliente' }
+      };
+      const sourceRoots = [
+        ['D:\\EXP_GIT', '{{ROOT_WINDOWS}}'],
+        ['D:\\EXP_TALLER', '{{ROOT_WINDOWS}}'],
+        ['C:\\EXP', '{{ROOT_WINDOWS}}'],
+        ['D:/EXP_GIT', '{{ROOT_SLASH}}'],
+        ['D:/EXP_TALLER', '{{ROOT_SLASH}}'],
+        ['C:/EXP', '{{ROOT_SLASH}}']
+      ];
+      const textTemplates = [];
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          const parent = node.parentElement;
+          if (!parent || parent.closest('script, style, .environment-switcher')) return NodeFilter.FILTER_REJECT;
+          return sourceRoots.some(([root]) => node.nodeValue.includes(root))
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT;
+        }
+      });
+
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        let template = node.nodeValue;
+        sourceRoots.forEach(([root, token]) => { template = template.split(root).join(token); });
+        textTemplates.push({ node, template });
+      }
+
+      function selectEnvironment(name) {
+        const environment = environments[name] || environments.workshop;
+        textTemplates.forEach(({ node, template }) => {
+          node.nodeValue = template
+            .split('{{ROOT_WINDOWS}}').join(environment.windows)
+            .split('{{ROOT_SLASH}}').join(environment.slash);
+        });
+        document.querySelectorAll('.environment-option').forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.environment === name));
+        });
+        document.documentElement.dataset.environment = name;
+        try { localStorage.setItem('gis-qb-manual-environment', name); } catch (_) {}
+      }
+
+      document.querySelectorAll('.environment-option').forEach((button) => {
+        button.addEventListener('click', () => selectEnvironment(button.dataset.environment));
+      });
+
+      document.querySelectorAll('pre').forEach((block) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-command';
+        button.textContent = 'Copiar';
+        button.setAttribute('aria-label', 'Copiar bloque de comandos');
+        button.addEventListener('click', async () => {
+          const code = block.querySelector('code');
+          try {
+            await navigator.clipboard.writeText(code ? code.innerText : block.innerText);
+            button.textContent = 'Copiado';
+            button.classList.add('copied');
+            setTimeout(() => {
+              button.textContent = 'Copiar';
+              button.classList.remove('copied');
+            }, 1600);
+          } catch (_) {
+            button.textContent = 'Seleccionar y copiar';
+          }
+        });
+        block.appendChild(button);
+      });
+
+      let initialEnvironment = 'workshop';
+      try {
+        const saved = localStorage.getItem('gis-qb-manual-environment');
+        if (saved && environments[saved]) initialEnvironment = saved;
+      } catch (_) {}
+      selectEnvironment(initialEnvironment);
+    })();
+  </script>
 </body>
 </html>
