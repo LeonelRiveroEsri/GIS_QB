@@ -178,8 +178,10 @@
           <tr><td><code>widgets/hidrograma-interactivo</code></td><td>Código fuente del widget original.</td><td>Sí</td></tr>
           <tr><td><code>widgets/hidrograma-interactivoV2</code></td><td>Código fuente del widget V2. En Experience Builder se instala como <code>hidrogramaV2</code>.</td><td>Sí</td></tr>
           <tr><td><code>widgets/perfil-elevacion</code></td><td>Código fuente del widget Perfil de elevación para Experience Builder 1.20.</td><td>Sí</td></tr>
+          <tr><td><code>widgets/selector-imagenes-drone</code></td><td>Selector cronológico y comparador de imágenes drone para Experience Builder 1.20.</td><td>Sí</td></tr>
           <tr><td><code>experiences/packages/*.zip</code></td><td>Paquetes editables e importables, generados por Experience Builder mediante <code>zipApp</code>.</td><td>Sí, después de importarlos</td></tr>
           <tr><td><code>experiences/*/app</code></td><td>Build completo para publicar en un servidor web.</td><td>No es la fuente principal</td></tr>
+          <tr><td><code>.vscode/settings.json</code></td><td>Configuración compartida de VS Code: formato, TypeScript, terminal y rutas de Node.js.</td><td>Sí, por acuerdo del equipo</td></tr>
         </tbody>
       </table>
 
@@ -243,6 +245,32 @@ D:\EXP_GIT\GIS_QB   → repositorio Git dentro del ambiente</code></pre>
       <p>Las direcciones de lectura y escritura deben corresponder al repositorio oficial:</p>
       <pre><code>origin  https://github.com/LeonelRiveroEsri/GIS_QB.git (fetch)
 origin  https://github.com/LeonelRiveroEsri/GIS_QB.git (push)</code></pre>
+
+      <h3>3.1.5 Usar la configuración compartida de VS Code</h3>
+      <p>El repositorio incluye <code>.vscode/settings.json</code>. Para que VS Code aplique esta configuración, abrir <strong>GIS_QB como carpeta raíz</strong> y no solamente un archivo o la carpeta superior <code>D:\EXP_GIT</code>:</p>
+      <pre><code>code "D:\EXP_GIT\GIS_QB"</code></pre>
+      <p>También se puede usar <strong>Archivo → Abrir carpeta</strong> y seleccionar <code>D:\EXP_GIT\GIS_QB</code>. Si VS Code solicita confirmar la confianza del espacio de trabajo, hacerlo únicamente después de comprobar que corresponde al repositorio oficial.</p>
+
+      <p>La configuración compartida establece, entre otros aspectos:</p>
+      <ul>
+        <li>CMD con Node.js como terminal predeterminada.</li>
+        <li>Node.js desde <code>D:\node\node-v24</code>.</li>
+        <li>Formato al guardar y organización explícita de imports.</li>
+        <li>Prettier como formateador para TypeScript, JavaScript, JSON y CSS.</li>
+        <li>Exclusión de <code>node_modules</code>, <code>dist</code> y <code>build</code> de las búsquedas.</li>
+        <li>Descarga automática del estado remoto de Git mediante <code>git.autofetch</code>.</li>
+      </ul>
+
+      <div class="callout warning">
+        Las rutas de Node.js corresponden al ambiente estándar del proyecto. Si otro equipo instala Node.js en una ubicación diferente, debe acordar el cambio antes de modificar y subir <code>.vscode/settings.json</code>. Una preferencia estrictamente personal debe guardarse en la configuración de usuario de VS Code, no en este archivo compartido.
+      </div>
+
+      <p>Para disponer del formato configurado, instalar en VS Code la extensión <strong>Prettier - Code formatter</strong> (<code>esbenp.prettier-vscode</code>). Después, abrir una terminal nueva y validar:</p>
+      <pre><code>where.exe node
+where.exe npm
+node --version
+npm --version</code></pre>
+      <p>No copiar manualmente <code>D:\EXP_GIT\.vscode</code> después de clonar: la versión oficial ya viaja dentro de <code>GIS_QB\.vscode</code> y se actualiza mediante <code>git pull</code>.</p>
 
       <h3>3.2 Instalar Experience Builder</h3>
       <p>Descargar Experience Builder Developer Edition, descomprimir la versión acordada por el equipo en <code>D:\EXP_GIT</code> y validar la versión:</p>
@@ -314,7 +342,13 @@ type "D:\EXP_GIT\client\your-extensions\widgets\hidrogramaV2\manifest.json"</cod
 type "D:\EXP_GIT\client\your-extensions\widgets\perfil-elevacion\manifest.json"</code></pre>
       <p>El manifest debe declarar <code>name: perfil-elevacion</code>, <code>label: Perfil de elevacion</code>, <code>exbVersion: 1.20.0</code> y la dependencia <code>jimu-arcgis</code>.</p>
 
-      <h3>4.4 Compartir las dependencias del cliente</h3>
+      <h3>4.4 Crear la unión del selector de imágenes drone</h3>
+      <pre><code>mklink /J "D:\EXP_GIT\client\your-extensions\widgets\selector-imagenes-drone" "D:\EXP_GIT\GIS_QB\widgets\selector-imagenes-drone"
+
+type "D:\EXP_GIT\client\your-extensions\widgets\selector-imagenes-drone\manifest.json"</code></pre>
+      <p>El manifest debe declarar <code>name: selector-imagenes-drone</code>, <code>label: Selector de imágenes drone</code>, <code>exbVersion: 1.20.0</code> y la dependencia <code>jimu-arcgis</code>.</p>
+
+      <h3>4.5 Compartir las dependencias del cliente</h3>
       <p>Webpack resuelve las uniones usando la ruta física dentro de <code>GIS_QB</code>. Crear una unión adicional para que encuentre el <code>node_modules</code> del cliente:</p>
       <pre><code>if exist "D:\EXP_GIT\GIS_QB\node_modules" (echo EXISTE) else (echo NO_EXISTE)
 
@@ -324,16 +358,17 @@ mklink /J "D:\EXP_GIT\GIS_QB\node_modules" "D:\EXP_GIT\client\node_modules"</cod
 git status --short</code></pre>
       <p><code>node_modules</code> no debe aparecer en Git. Está ignorado y nunca debe agregarse al repositorio.</p>
 
-      <h3>4.5 Confirmar los widgets vinculados</h3>
+      <h3>4.6 Confirmar los widgets vinculados</h3>
       <pre><code>dir /b /ad "D:\EXP_GIT\client\your-extensions\widgets"</code></pre>
       <p>Resultado esperado, sin importar el orden:</p>
       <pre><code>hidrograma-interactivo
 hidrogramaV2
 perfil-elevacion
+selector-imagenes-drone
 simple</code></pre>
 
       <div class="callout warning">
-        Las uniones de directorio <code>mklink /J</code> normalmente no requieren permisos de administrador. Ambos manifests declaran <code>exbVersion: 1.14.0</code> como versión mínima y se validan en Experience Builder 1.20.0.
+        Las uniones de directorio <code>mklink /J</code> normalmente no requieren permisos de administrador. Revisar el <code>exbVersion</code> de cada manifest y usar la versión de Experience Builder acordada por el equipo.
       </div>
     </section>
 
@@ -375,14 +410,16 @@ npm start</code></pre>
 
       <p>Editar los widgets en:</p>
       <pre><code>D:\EXP_GIT\client\your-extensions\widgets\hidrograma-interactivo
-D:\EXP_GIT\client\your-extensions\widgets\hidrogramaV2</code></pre>
+D:\EXP_GIT\client\your-extensions\widgets\hidrogramaV2
+D:\EXP_GIT\client\your-extensions\widgets\perfil-elevacion
+D:\EXP_GIT\client\your-extensions\widgets\selector-imagenes-drone</code></pre>
 
       <p>Antes de exportar:</p>
       <ul class="checklist">
         <li>La Experience abre sin errores.</li>
         <li>El widget muestra el cambio esperado.</li>
         <li>Filtros, mapas y exportaciones funcionan.</li>
-        <li>No hay referencias al widget de perfiles.</li>
+        <li>No se incluyeron widgets ni recursos ajenos a la Experience que se entregará.</li>
         <li>La Experience fue guardada en Builder.</li>
       </ul>
     </section>
