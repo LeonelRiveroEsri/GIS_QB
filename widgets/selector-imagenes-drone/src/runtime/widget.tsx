@@ -154,6 +154,54 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     void scanMap(view)
   }, [scanMap])
 
+  const years = React.useMemo(() =>
+    Array.from(new Set(items.map(item => item.date.getFullYear())))
+      .sort((a, b) => b - a)
+  , [items])
+
+  const filtered = React.useMemo(() => {
+    const normalized = query.trim().toLocaleLowerCase()
+    return items.filter(item =>
+      (!normalized || item.title.toLocaleLowerCase().includes(normalized) || item.iso.includes(normalized)) &&
+      (!year || item.date.getFullYear() === Number(year)) &&
+      (!from || item.iso >= from) &&
+      (!to || item.iso <= to)
+    )
+  }, [items, query, year, from, to])
+
+  const adjacentComparison = React.useMemo(() => {
+    const index = filtered.findIndex(item => item.id === activeId)
+    if (index < 0) return null
+    return filtered[index + 1] || filtered[index - 1] || null
+  }, [filtered, activeId])
+
+  const comparisonImage = React.useMemo(() =>
+    filtered.find(item => item.id === compareId && item.id !== activeId) || adjacentComparison
+  , [filtered, compareId, activeId, adjacentComparison])
+
+  React.useEffect(() => {
+    if (!filtered.length) {
+      setCompareMode(false)
+      setCompareId('')
+      return
+    }
+    if (!filtered.some(item => item.id === activeId)) {
+      const next = filtered[0]
+      setActiveId(next.id)
+      setCompareId(filtered[1]?.id || '')
+    }
+  }, [filtered, activeId])
+
+  React.useEffect(() => {
+    if (filtered.length < 2) {
+      setCompareMode(false)
+      setCompareId('')
+      return
+    }
+    const comparisonIsValid = filtered.some(item => item.id === compareId && item.id !== activeId)
+    if (!comparisonIsValid) setCompareId(adjacentComparison?.id || '')
+  }, [filtered, activeId, compareId, adjacentComparison])
+
   const selectPrimary = React.useCallback(async (id: string) => {
     const chosen = items.find(item => item.id === id)
     if (!chosen) return
@@ -162,7 +210,10 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
       item.layer.opacity = opacityById[item.id] ?? 1
     })
     setActiveId(id)
-    if (compareId === id) setCompareId(items.find(item => item.id !== id)?.id || '')
+    if (compareId === id || !filtered.some(item => item.id === compareId)) {
+      const selectedIndex = filtered.findIndex(item => item.id === id)
+      setCompareId(filtered[selectedIndex + 1]?.id || filtered[selectedIndex - 1]?.id || '')
+    }
     if (props.config.zoomOnSelect && jmv?.view) {
       try {
         await chosen.layer.load()
@@ -177,16 +228,16 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
         console.warn('No fue posible acercar a la extensión de la imagen seleccionada.', error)
       }
     }
-  }, [items, compareMode, compareId, opacityById, props.config.zoomOnSelect, jmv])
+  }, [items, filtered, compareMode, compareId, opacityById, props.config.zoomOnSelect, jmv])
 
   React.useEffect(() => {
     if (!items.length) return
     items.forEach(item => {
-      const isComparison = compareMode && item.id === compareId && item.id !== activeId
+      const isComparison = compareMode && item.id === comparisonImage?.id && item.id !== activeId
       item.layer.visible = item.id === activeId || isComparison
       item.layer.opacity = opacityById[item.id] ?? 1
     })
-  }, [compareMode, compareId, activeId, items, opacityById])
+  }, [compareMode, comparisonImage, activeId, items, opacityById])
 
   const cycleOpacity = React.useCallback((item: DatedLayer) => {
     const current = opacityById[item.id] ?? 1
@@ -203,7 +254,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
       if (!compareMode || !jmv?.view) return
 
       const primary = items.find(item => item.id === activeId)
-      const comparison = items.find(item => item.id === compareId)
+      const comparison = comparisonImage
       if (!primary || !comparison || primary.id === comparison.id) return
 
       await Promise.all([primary.layer.load(), comparison.layer.load()])
@@ -344,24 +395,9 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
       cancelled = true
       removeSwipe()
     }
-  }, [compareMode, activeId, compareId, items, jmv, removeSwipe])
+  }, [compareMode, activeId, comparisonImage, items, jmv, removeSwipe])
 
-  const years = React.useMemo(() =>
-    Array.from(new Set(items.map(item => item.date.getFullYear())))
-      .sort((a, b) => b - a)
-  , [items])
-
-  const filtered = React.useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase()
-    return items.filter(item =>
-      (!normalized || item.title.toLocaleLowerCase().includes(normalized) || item.iso.includes(normalized)) &&
-      (!year || item.date.getFullYear() === Number(year)) &&
-      (!from || item.iso >= from) &&
-      (!to || item.iso <= to)
-    )
-  }, [items, query, year, from, to])
-
-  const activeIndex = items.findIndex(item => item.id === activeId)
+  const activeIndex = filtered.findIndex(item => item.id === activeId)
   const widgetTitle = props.config.widgetTitle?.trim() || 'Imágenes drone'
   const month = (date: Date) => date.toLocaleDateString('es-CL', { month: 'short' }).replace('.', '')
   const longDate = (date: Date) => date.toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -449,14 +485,19 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
 
       <footer className='drone-footer'>
         <div className='drone-nav'>
-          <button disabled={activeIndex >= items.length - 1} onClick={() => void selectPrimary(items[activeIndex + 1]?.id)} aria-label={t('previous')}><Chevron/></button>
-          <div className='drone-position'><strong>{items[activeIndex] ? longDate(items[activeIndex].date) : '—'}</strong>{t('image')} {activeIndex + 1} {t('of')} {items.length}</div>
-          <button disabled={activeIndex <= 0} onClick={() => void selectPrimary(items[activeIndex - 1]?.id)} aria-label={t('next')}><Chevron right/></button>
+          <button disabled={activeIndex < 0 || activeIndex >= filtered.length - 1} onClick={() => void selectPrimary(filtered[activeIndex + 1]?.id)} aria-label={t('previous')}><Chevron/></button>
+          <div className='drone-position'><strong>{filtered[activeIndex] ? longDate(filtered[activeIndex].date) : '—'}</strong>{t('image')} {activeIndex >= 0 ? activeIndex + 1 : 0} {t('of')} {filtered.length}</div>
+          <button disabled={activeIndex <= 0} onClick={() => void selectPrimary(filtered[activeIndex - 1]?.id)} aria-label={t('next')}><Chevron right/></button>
         </div>
         <div className='drone-compare-row'>
-          <div className='drone-compare-copy'><strong>{t('compare')}</strong><span>{t('compareHint')}</span></div>
-          <button className={`drone-toggle${compareMode ? ' on' : ''}`} onClick={() => setCompareMode(!compareMode)} role='switch' aria-checked={compareMode} aria-label={t('compare')}/>
+          <div className='drone-compare-copy'><strong>{t('compare')}</strong><span>{filtered.length < 2 ? t('compareUnavailable') : t('compareHint')}</span></div>
+          <button disabled={filtered.length < 2} className={`drone-toggle${compareMode ? ' on' : ''}`} onClick={() => { if (!compareMode && adjacentComparison) setCompareId(adjacentComparison.id); setCompareMode(!compareMode) }} role='switch' aria-checked={compareMode} aria-label={t('compare')}/>
         </div>
+        {filtered.length >= 2 && filtered[activeIndex] && comparisonImage && <div className={`drone-compare-summary${compareMode ? ' active' : ''}`}>
+          <span><small>{t('primary')}</small><strong>{longDate(filtered[activeIndex].date)}</strong></span>
+          <b>↔</b>
+          <span><small>{t('comparison')}</small><strong>{longDate(comparisonImage.date)}</strong></span>
+        </div>}
         {compareMode && <div className='drone-swipe-status'>{t('swipeActive')}</div>}
       </footer>
     </div>

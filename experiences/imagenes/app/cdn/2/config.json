@@ -207,7 +207,14 @@
   "dialogs": {},
   "messageConfigs": {},
   "attributes": {
-    "portalUrl": "https://Teck-QB2.maps.arcgis.com"
+    "portalUrl": "https://Teck-QB2.maps.arcgis.com",
+    "isWebTier": false,
+    "clientId": "BtJfYNpED0l11nil",
+    "title": "imagenes",
+    "description": null,
+    "type": "Web Experience",
+    "thumbnail": null,
+    "express": false
   },
   "timestamp": 1785436729706,
   "sharedThemeVariables": {
@@ -232,5 +239,6 @@
     {
       "page_0": []
     }
-  ]
+  ],
+  "publishTimestamp": 1787846632483
 }

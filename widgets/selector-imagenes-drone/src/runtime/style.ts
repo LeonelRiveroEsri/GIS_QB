@@ -112,10 +112,18 @@ export const getStyle = () => css`
   .drone-compare-copy strong { display: block; font-size: 12px; }
   .drone-compare-copy span { display: block; font-size: 10px; color: var(--drone-muted); margin-top: 2px; }
   .drone-toggle { position: relative; width: 38px; height: 21px; border: 0; border-radius: 12px; padding: 0; background: #bcc8ca; cursor: pointer; }
+  .drone-toggle:disabled { opacity: .45; cursor: not-allowed; }
   .drone-toggle::after { content: ""; position: absolute; width: 17px; height: 17px; left: 2px; top: 2px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
   .drone-toggle.on { background: var(--drone-teal); }
   .drone-toggle.on::after { left: 19px; }
   .drone-swipe-status { margin-top: 10px; padding: 7px 9px; border-radius: 6px; font-size: 10px; font-weight: 650; color: var(--drone-teal-dark); background: var(--drone-soft); text-align: center; }
+  .drone-compare-summary { display: grid; grid-template-columns: minmax(0,1fr) 22px minmax(0,1fr); gap: 5px; align-items: center; margin-top: 9px; padding: 8px; border: 1px solid var(--drone-line); border-radius: 7px; text-align: center; background: #f7f9f9; }
+  .drone-compare-summary.active { border-color: #8fc6c1; background: var(--drone-soft); }
+  .drone-compare-summary span { min-width: 0; }
+  .drone-compare-summary small, .drone-compare-summary strong { display: block; }
+  .drone-compare-summary small { color: var(--drone-muted); font-size: 8px; text-transform: uppercase; }
+  .drone-compare-summary strong { margin-top: 2px; color: var(--drone-teal-dark); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .drone-compare-summary > b { color: var(--drone-teal); }
 
   .drone-state { height: 100%; min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px; text-align: center; color: var(--drone-muted); }
   .drone-state svg { color: #7d969b; margin-bottom: 13px; }
