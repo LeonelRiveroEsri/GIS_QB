@@ -51,10 +51,11 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
 
   const parseDate = React.useCallback((title: string): { date: Date, iso: string } | null => {
     try {
-      const regex = new RegExp(props.config.datePattern || '(\\d{4})[_-](\\d{2})[_-](\\d{2})')
+      const regex = new RegExp(props.config.datePattern || '(\\d{2}|\\d{4})[_-](\\d{2})[_-](\\d{2})')
       const match = title.match(regex)
       if (!match || match.length < 4) return null
-      const year = Number(match[1])
+      const rawYear = Number(match[1])
+      const year = match[1].length === 2 ? 2000 + rawYear : rawYear
       const month = Number(match[2])
       const day = Number(match[3])
       const date = new Date(year, month - 1, day)
@@ -71,7 +72,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     if (!map) return
     const allLayers = map.allLayers?.toArray?.() || []
     let group = allLayers.find((layer: __esri.Layer) =>
-      layer.type === 'group' && layer.title.trim().toLocaleLowerCase() === (props.config.groupTitle || 'Drone').trim().toLocaleLowerCase()
+      layer.type === 'group' && layer.title.trim().toLocaleLowerCase() === (props.config.groupTitle || 'Imagenes Drone').trim().toLocaleLowerCase()
     ) as __esri.GroupLayer
 
     // If this web map uses another group name, choose the group containing

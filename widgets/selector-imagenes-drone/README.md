@@ -1,16 +1,17 @@
 # Selector de imágenes drone
 
-Widget para ArcGIS Experience Builder Developer Edition 1.20 que controla capas
-de teselas fechadas dentro de un `GroupLayer` del web map.
+Widget profesional para ArcGIS Experience Builder Developer Edition 1.20 que
+filtra, analiza y compara capas fechadas dentro de un `GroupLayer` del web map.
 
 ## Convención predeterminada
 
-- Grupo: `Drone`
-- Nombre de capa: `AAAA_MM_DD_texto` o `AAAA-MM-DD-texto`
-- Ejemplo: `2026_04_28_Drone`
+- Grupo PAO: `Imagenes Drone`
+- Nombre de capa: `AA_MM_DD_texto`, `AAAA_MM_DD_texto` o variantes con guion
+- Ejemplo PAO: `26_05_25_Subestacion-El-Mauro_A_E35`
 
-La expresión regular configurable `(\d{4})[_-](\d{2})[_-](\d{2})` extrae año,
-mes y día. No se requieren footprints, mosaic datasets ni Image Server.
+La expresión regular configurable `(\d{2}|\d{4})[_-](\d{2})[_-](\d{2})`
+extrae año, mes y día. Los años de dos dígitos se interpretan dentro del siglo
+XXI (`26` → `2026`). No se requieren footprints ni IDs fijos de capas.
 
 Si el grupo configurado no existe en otro Web Map, el widget detecta
 automáticamente el grupo que contenga más capas con esta nomenclatura. Por
