@@ -559,9 +559,25 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
         </section>
       </main>}
       {tab === 'analysis' && <main className='insar-content insar-analysis'>
-        <section className='insar-panel'><div className='insar-panel-head'><h3>Ranking de sectores</h3><span>Máximo absoluto · clic para filtrar</span></div><SectorRanking records={filtered} onSelect={value => setSector(value)}/></section>
-        <section className='insar-panel'><div className='insar-panel-head'><h3>Intensidad sector–tiempo</h3><span>Máximo absoluto por mes</span></div><TemporalHeatmap records={filtered} onSelect={(value, date) => { setSector(value); setYear(String(date.getFullYear())); setMonth(String(date.getMonth() + 1)) }}/></section>
-        <section className='insar-panel'><div className='insar-panel-head'><h3>Distribución de deformaciones</h3><span>Frecuencia por rango · clic para ubicar</span></div><DeformationHistogram records={filtered} onSelect={record => void selectRecord(record)}/></section>
+        {indicatorCompareMode && <div className='insar-indicator-legend'><span className='primary'><i/>A · {primaryPeriodLabel}</span><span className='comparison'><i/>B · {comparisonPeriodLabel}</span></div>}
+        <section className='insar-panel'><div className='insar-panel-head'><h3>Ranking de sectores</h3><span>Máximo absoluto · clic para filtrar</span></div>
+          <div className={`insar-analysis-comparison${indicatorCompareMode ? ' active' : ''}`}>
+            <div className='insar-analysis-scenario primary'>{indicatorCompareMode && <div className='insar-analysis-scenario-head'><b>A</b><span><strong>Periodo principal</strong><small>{primaryPeriodLabel} · {filtered.length} registros</small></span></div>}<SectorRanking records={filtered} onSelect={value => setSector(value)}/></div>
+            {indicatorCompareMode && <div className='insar-analysis-scenario comparison'><div className='insar-analysis-scenario-head'><b>B</b><span><strong>Periodo de comparación</strong><small>{comparisonPeriodLabel} · {comparisonFiltered.length} registros</small></span></div><SectorRanking records={comparisonFiltered} onSelect={value => setSector(value)}/></div>}
+          </div>
+        </section>
+        <section className='insar-panel'><div className='insar-panel-head'><h3>Intensidad sector–tiempo</h3><span>Máximo absoluto por mes</span></div>
+          <div className={`insar-analysis-comparison${indicatorCompareMode ? ' active' : ''}`}>
+            <div className='insar-analysis-scenario primary'>{indicatorCompareMode && <div className='insar-analysis-scenario-head'><b>A</b><span><strong>Periodo principal</strong><small>{primaryPeriodLabel}</small></span></div>}<TemporalHeatmap records={filtered} onSelect={(value, date) => { setSector(value); setYear(String(date.getFullYear())); setMonth(String(date.getMonth() + 1)) }}/></div>
+            {indicatorCompareMode && <div className='insar-analysis-scenario comparison'><div className='insar-analysis-scenario-head'><b>B</b><span><strong>Periodo de comparación</strong><small>{comparisonPeriodLabel}</small></span></div><TemporalHeatmap records={comparisonFiltered} onSelect={(value, date) => { setSector(value); setComparisonYear(String(date.getFullYear())); setComparisonMonth(String(date.getMonth() + 1)) }}/></div>}
+          </div>
+        </section>
+        <section className='insar-panel'><div className='insar-panel-head'><h3>Distribución de deformaciones</h3><span>Frecuencia por rango · clic para ubicar</span></div>
+          <div className={`insar-analysis-comparison${indicatorCompareMode ? ' active' : ''}`}>
+            <div className='insar-analysis-scenario primary'>{indicatorCompareMode && <div className='insar-analysis-scenario-head'><b>A</b><span><strong>Periodo principal</strong><small>{primaryPeriodLabel}</small></span></div>}<DeformationHistogram records={filtered} onSelect={record => void selectRecord(record)}/></div>
+            {indicatorCompareMode && <div className='insar-analysis-scenario comparison'><div className='insar-analysis-scenario-head'><b>B</b><span><strong>Periodo de comparación</strong><small>{comparisonPeriodLabel}</small></span></div><DeformationHistogram records={comparisonFiltered} onSelect={record => void selectRecord(record)}/></div>}
+          </div>
+        </section>
       </main>}
       {tab === 'images' && <main className='insar-images'>
         <div className='insar-image-list'>{filteredImages.map((image, index) => {
