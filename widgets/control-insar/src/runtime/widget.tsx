@@ -59,6 +59,9 @@ const downloadBlob = (content: BlobPart, fileName: string, type: string) => {
   window.setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 const csvValue = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`
+const imageMatchesPeriod = (image: DatedImage, selectedYear: string, selectedMonth: string) =>
+  (!selectedYear || String(image.date.getFullYear()) === selectedYear) &&
+  (!selectedMonth || String(image.date.getMonth() + 1) === selectedMonth)
 
 const MiniChart = ({ records, comparisonRecords = [], onSelect }: { records: InsarRecord[], comparisonRecords?: InsarRecord[], onSelect: (record: InsarRecord) => void }) => {
   const points = React.useMemo(() => records.filter(record => record.value != null).slice(0, 1000), [records])
@@ -269,10 +272,12 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     (!comparisonYear || (record.date && String(record.date.getFullYear()) === comparisonYear)) &&
     (!comparisonMonth || (record.date && String(record.date.getMonth() + 1) === comparisonMonth))
   ) : [], [records, sector, type, indicatorCompareMode, comparisonYear, comparisonMonth])
-  const filteredImages = React.useMemo(() => images.filter(image =>
-    (!sectorImageIds || sectorImageIds.has(image.id)) && (!year || String(image.date.getFullYear()) === year) &&
-    (!month || String(image.date.getMonth() + 1) === month)
-  ), [images, sectorImageIds, year, month])
+  const filteredImages = React.useMemo(() => images.filter(image => {
+    if (sectorImageIds && !sectorImageIds.has(image.id)) return false
+    const matchesPrimary = imageMatchesPeriod(image, year, month)
+    const matchesComparison = indicatorCompareMode && imageMatchesPeriod(image, comparisonYear, comparisonMonth)
+    return matchesPrimary || matchesComparison
+  }), [images, sectorImageIds, year, month, indicatorCompareMode, comparisonYear, comparisonMonth])
   const adjacentComparison = React.useMemo(() => {
     const activeIndex = filteredImages.findIndex(image => image.id === activeImageId)
     if (activeIndex < 0) return null
@@ -585,7 +590,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
           return <div key={image.id} className={`insar-image-card${active ? ' active' : ''}${comparing ? ' compare' : ''}`}>
             <button className='insar-image-select' onClick={() => compareMode && !active ? setCompareImageId(image.id) : selectImage(image.id)}>
               <span className='insar-date-box'><strong>{image.date.getDate()}</strong><small>{image.date.toLocaleDateString('es-CL', { month: 'short' }).replace('.', '')}</small></span>
-              <span className='insar-image-copy'><strong>{image.date.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}</strong><small>CAPA · {image.title}</small>{index === 0 && <em>MÁS RECIENTE</em>}{comparing && <em>COMPARACIÓN</em>}</span>
+              <span className='insar-image-copy'><strong>{image.date.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}</strong><small>CAPA · {image.title}</small>{index === 0 && <em>MÁS RECIENTE</em>}{indicatorCompareMode && imageMatchesPeriod(image, year, month) && <em>PERIODO A</em>}{indicatorCompareMode && imageMatchesPeriod(image, comparisonYear, comparisonMonth) && <em className='period-b'>PERIODO B</em>}{comparing && <em>COMPARACIÓN</em>}</span>
               <span className='insar-check'>{active || comparing ? '✓' : ''}</span>
             </button>
             <button className='insar-opacity' onClick={() => cycleOpacity(image)}>◐ {Math.round(opacity * 100)}%</button>
