@@ -60,14 +60,17 @@ const downloadBlob = (content: BlobPart, fileName: string, type: string) => {
 }
 const csvValue = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`
 
-const MiniChart = ({ records, onSelect }: { records: InsarRecord[], onSelect: (record: InsarRecord) => void }) => {
+const MiniChart = ({ records, comparisonRecords = [], onSelect }: { records: InsarRecord[], comparisonRecords?: InsarRecord[], onSelect: (record: InsarRecord) => void }) => {
   const points = React.useMemo(() => records.filter(record => record.value != null).slice(0, 1000), [records])
-  if (points.length < 2) return <div className='insar-empty' style={{ minHeight: 115 }}>No hay suficientes puntos para construir la serie.</div>
-  const values = points.map(point => point.value as number)
+  const comparisonPoints = React.useMemo(() => comparisonRecords.filter(record => record.value != null).slice(0, 1000), [comparisonRecords])
+  if (points.length < 2 && comparisonPoints.length < 2) return <div className='insar-empty' style={{ minHeight: 115 }}>No hay suficientes puntos para construir la serie.</div>
+  const values = [...points, ...comparisonPoints].map(point => point.value as number)
   const min = Math.min(0, ...values); const max = Math.max(0, ...values); const range = max - min || 1
-  const width = Math.max(300, points.length * 14)
-  const coords = points.map((record, index) => ({ record, x: 8 + index * ((width - 16) / (points.length - 1)), y: 108 - (((record.value as number) - min) / range) * 92 }))
+  const width = Math.max(300, Math.max(points.length, comparisonPoints.length) * 14)
+  const buildCoords = (items: InsarRecord[]) => items.map((record, index) => ({ record, x: items.length === 1 ? width / 2 : 8 + index * ((width - 16) / (items.length - 1)), y: 108 - (((record.value as number) - min) / range) * 92 }))
+  const coords = buildCoords(points); const comparisonCoords = buildCoords(comparisonPoints)
   const line = coords.map(p => `${p.x},${p.y}`).join(' ')
+  const comparisonLine = comparisonCoords.map(p => `${p.x},${p.y}`).join(' ')
   const zeroY = 108 - ((0 - min) / range) * 92
   const area = `8,${zeroY} ${line} ${width - 8},${zeroY}`
   const ticks = Array.from({ length: 5 }, (_, index) => {
@@ -83,8 +86,10 @@ const MiniChart = ({ records, onSelect }: { records: InsarRecord[], onSelect: (r
     <div className='insar-chart-scroll'><svg className='insar-chart' width={width} viewBox={`0 0 ${width} 120`} preserveAspectRatio='none' aria-label='Deformación por registro'>
       {ticks.map(tick => <line key={tick.y} className={`insar-grid-line${Math.abs(tick.value) < range / 1000 ? ' zero' : ''}`} x1='0' y1={tick.y} x2={width} y2={tick.y}/>)}
       <line className='insar-axis zero' x1='0' y1={zeroY} x2={width} y2={zeroY}/>
-      <polygon className='insar-area' points={area}/><polyline className='insar-line' points={line}/>
+      {coords.length > 1 && <><polygon className='insar-area' points={area}/><polyline className='insar-line' points={line}/></>}
       {coords.map(point => <circle key={point.record.key} className='insar-dot is-action' cx={point.x} cy={point.y} r='3.2' tabIndex={0} onClick={() => onSelect(point.record)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') onSelect(point.record) }}><title>{point.record.name}: {point.record.value?.toFixed(1)} cm · {point.record.sector} · {point.record.type}</title></circle>)}
+      {comparisonCoords.length > 1 && <polyline className='insar-line comparison' points={comparisonLine}/>}
+      {comparisonCoords.map(point => <circle key={`comparison-${point.record.key}`} className='insar-dot comparison is-action' cx={point.x} cy={point.y} r='3.2' tabIndex={0} onClick={() => onSelect(point.record)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') onSelect(point.record) }}><title>Comparación · {point.record.name}: {point.record.value?.toFixed(1)} cm · {point.record.sector} · {point.record.type}</title></circle>)}
     </svg></div>
   </div>
 }
@@ -156,6 +161,9 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const [type, setType] = React.useState('')
   const [year, setYear] = React.useState('')
   const [month, setMonth] = React.useState('')
+  const [indicatorCompareMode, setIndicatorCompareMode] = React.useState(false)
+  const [comparisonYear, setComparisonYear] = React.useState('')
+  const [comparisonMonth, setComparisonMonth] = React.useState('')
   const [exporting, setExporting] = React.useState<'csv' | 'xlsx' | ''>('')
   const [exportError, setExportError] = React.useState('')
   const highlightRef = React.useRef<{ remove: () => void }>()
@@ -256,6 +264,11 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     (!year || (record.date && String(record.date.getFullYear()) === year)) &&
     (!month || (record.date && String(record.date.getMonth() + 1) === month))
   ), [records, sector, type, year, month])
+  const comparisonFiltered = React.useMemo(() => indicatorCompareMode ? records.filter(record =>
+    (!sector || record.sector === sector) && (!type || record.type === type) &&
+    (!comparisonYear || (record.date && String(record.date.getFullYear()) === comparisonYear)) &&
+    (!comparisonMonth || (record.date && String(record.date.getMonth() + 1) === comparisonMonth))
+  ) : [], [records, sector, type, indicatorCompareMode, comparisonYear, comparisonMonth])
   const filteredImages = React.useMemo(() => images.filter(image =>
     (!sectorImageIds || sectorImageIds.has(image.id)) && (!year || String(image.date.getFullYear()) === year) &&
     (!month || String(image.date.getMonth() + 1) === month)
@@ -275,6 +288,14 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
   const average = values.length ? values.reduce((a, b) => a + b, 0) / values.length : null
   const maximum = values.length ? Math.max(...values.map(Math.abs)) : null
   const latest = filtered.map(r => r.date).filter((date): date is Date => Boolean(date)).sort((a, b) => b.getTime() - a.getTime())[0]
+  const comparisonValues = comparisonFiltered.map(r => r.value).filter((value): value is number => value != null)
+  const comparisonAverage = comparisonValues.length ? comparisonValues.reduce((a, b) => a + b, 0) / comparisonValues.length : null
+  const comparisonMaximum = comparisonValues.length ? Math.max(...comparisonValues.map(Math.abs)) : null
+  const comparisonLatest = comparisonFiltered.map(r => r.date).filter((date): date is Date => Boolean(date)).sort((a, b) => b.getTime() - a.getTime())[0]
+  const monthLabel = (value: string) => value ? MONTHS.find(item => item.value === value)?.label || value : 'Todos los meses'
+  const primaryPeriodLabel = `${monthLabel(month)}${year ? ` ${year}` : year === '' ? ' · Todos los años' : ''}`
+  const comparisonPeriodLabel = `${monthLabel(comparisonMonth)}${comparisonYear ? ` ${comparisonYear}` : comparisonYear === '' ? ' · Todos los años' : ''}`
+  const delta = (primary: number | null, comparison: number | null) => primary == null || comparison == null ? null : primary - comparison
   const rowsForExport = React.useMemo(() => exportRows(filtered), [filtered])
   const downloadCsv = () => {
     if (!rowsForExport.length) return
@@ -488,7 +509,7 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     void applySectorAoi().catch(error => console.warn('No fue posible aplicar el AOI del sector.', error))
     return () => { ++aoiRequestRef.current }
   }, [sector, records, images, jmv, flashSector])
-  const clear = () => { setSector(''); setType(''); setYear(''); setMonth('') }
+  const clear = () => { setSector(''); setType(''); setYear(''); setMonth(''); setIndicatorCompareMode(false); setComparisonYear(''); setComparisonMonth('') }
 
   return <div css={getStyle()} className='insar-shell'>
     {props.useMapWidgetIds?.[0] && <JimuMapViewComponent useMapWidgetId={props.useMapWidgetIds[0]} onActiveViewChange={setJmv}/>} 
@@ -501,16 +522,32 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
           <div className='insar-field'><label>Año</label><select value={year} onChange={e => setYear(e.target.value)}><option value=''>Todos</option>{years.map(v => <option key={v} value={String(v)}>{v}</option>)}</select></div>
           <div className='insar-field'><label>Mes</label><select value={month} onChange={e => setMonth(e.target.value)}><option value=''>Todos</option>{MONTHS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
         </div>
-        <div className='insar-actions'><button className='insar-clear' onClick={clear}>Limpiar filtros</button><span className='insar-count'>{filtered.length} registros · {filteredImages.length} imágenes</span></div>
+        <div className={`insar-period-compare${indicatorCompareMode ? ' active' : ''}`}>
+          <button className='insar-period-compare-trigger' onClick={() => setIndicatorCompareMode(value => !value)} aria-expanded={indicatorCompareMode}>
+            <span className='insar-period-compare-icon' aria-hidden='true'>⇄</span>
+            <span><strong>Comparar periodos</strong><small>Contraste los indicadores con otro año y mes</small></span>
+            <i>{indicatorCompareMode ? 'Activo' : 'Activar'}</i>
+          </button>
+          {indicatorCompareMode && <div className='insar-period-compare-body'>
+            <div className='insar-period-scenario primary'><b>A</b><span><small>Periodo principal</small><strong>{primaryPeriodLabel}</strong></span></div>
+            <div className='insar-period-versus'>VS</div>
+            <div className='insar-period-comparison-fields'>
+              <div className='insar-field'><label>Año comparación</label><select value={comparisonYear} onChange={e => setComparisonYear(e.target.value)}><option value=''>Todos</option>{years.map(v => <option key={v} value={String(v)}>{v}</option>)}</select></div>
+              <div className='insar-field'><label>Mes comparación</label><select value={comparisonMonth} onChange={e => setComparisonMonth(e.target.value)}><option value=''>Todos</option>{MONTHS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}</select></div>
+            </div>
+          </div>}
+        </div>
+        <div className='insar-actions'><button className='insar-clear' onClick={clear}>Limpiar filtros</button><span className='insar-count'>{filtered.length} principal{indicatorCompareMode ? ` · ${comparisonFiltered.length} comparación` : ''} · {filteredImages.length} imágenes</span></div>
       </section>
       <nav className='insar-tabs'><button className={tab === 'indicators' ? 'active' : ''} onClick={() => setTab('indicators')}>Indicadores</button><button className={tab === 'analysis' ? 'active' : ''} onClick={() => setTab('analysis')}>Análisis</button><button className={tab === 'images' ? 'active' : ''} onClick={() => setTab('images')}>Imágenes <span>{filteredImages.length}</span></button></nav>
       {tab === 'indicators' && <main className='insar-content'>
-        <div className='insar-kpis'>
-          <div className='insar-kpi'><span>Promedio</span><strong>{average == null ? '—' : average.toFixed(2)}</strong><small>cm</small></div>
-          <div className='insar-kpi'><span>Máximo abs.</span><strong>{maximum == null ? '—' : maximum.toFixed(2)}</strong><small>cm</small></div>
-          <div className='insar-kpi'><span>Última fecha</span><strong style={{ fontSize: 12 }}>{latest ? latest.toLocaleDateString('es-CL') : '—'}</strong><small>{new Set(filtered.map(r => r.sector).filter(Boolean)).size} sectores</small></div>
+        {indicatorCompareMode && <div className='insar-indicator-legend'><span className='primary'><i/>A · {primaryPeriodLabel}</span><span className='comparison'><i/>B · {comparisonPeriodLabel}</span></div>}
+        <div className={`insar-kpis${indicatorCompareMode ? ' comparing' : ''}`}>
+          <div className='insar-kpi'><span>Promedio</span><div className='insar-kpi-values'><div><small>{indicatorCompareMode ? 'Principal' : 'Valor filtrado'}</small><strong>{average == null ? '—' : average.toFixed(2)}</strong></div>{indicatorCompareMode && <div className='comparison'><small>Comparación</small><strong>{comparisonAverage == null ? '—' : comparisonAverage.toFixed(2)}</strong></div>}</div>{indicatorCompareMode && delta(average, comparisonAverage) != null && <em className={delta(average, comparisonAverage)! >= 0 ? 'positive' : 'negative'}>Δ {delta(average, comparisonAverage)! >= 0 ? '+' : ''}{delta(average, comparisonAverage)!.toFixed(2)} cm</em>}<small>cm</small></div>
+          <div className='insar-kpi'><span>Máximo abs.</span><div className='insar-kpi-values'><div><small>{indicatorCompareMode ? 'Principal' : 'Valor filtrado'}</small><strong>{maximum == null ? '—' : maximum.toFixed(2)}</strong></div>{indicatorCompareMode && <div className='comparison'><small>Comparación</small><strong>{comparisonMaximum == null ? '—' : comparisonMaximum.toFixed(2)}</strong></div>}</div>{indicatorCompareMode && delta(maximum, comparisonMaximum) != null && <em className={delta(maximum, comparisonMaximum)! >= 0 ? 'positive' : 'negative'}>Δ {delta(maximum, comparisonMaximum)! >= 0 ? '+' : ''}{delta(maximum, comparisonMaximum)!.toFixed(2)} cm</em>}<small>cm</small></div>
+          <div className='insar-kpi'><span>Última fecha</span><div className='insar-kpi-values dates'><div><small>{indicatorCompareMode ? 'Principal' : 'Fecha'}</small><strong>{latest ? latest.toLocaleDateString('es-CL') : '—'}</strong></div>{indicatorCompareMode && <div className='comparison'><small>Comparación</small><strong>{comparisonLatest ? comparisonLatest.toLocaleDateString('es-CL') : '—'}</strong></div>}</div><small>{new Set(filtered.map(r => r.sector).filter(Boolean)).size} sectores</small></div>
         </div>
-        <section className='insar-panel'><div className='insar-panel-head'><h3>Deformación por punto evaluado</h3><span>{Math.min(filtered.length, 1000)} puntos · clic para ubicar</span></div><MiniChart records={filtered} onSelect={record => void selectRecord(record)}/></section>
+        <section className='insar-panel'><div className='insar-panel-head'><h3>Deformación por punto evaluado</h3><span>{Math.min(filtered.length, 1000)} principal{indicatorCompareMode ? ` · ${Math.min(comparisonFiltered.length, 1000)} comparación` : ''} · clic para ubicar</span></div><MiniChart records={filtered} comparisonRecords={indicatorCompareMode ? comparisonFiltered : []} onSelect={record => void selectRecord(record)}/></section>
         <section className='insar-panel insar-export-panel'><div className='insar-panel-head'><h3>Descargar datos</h3><span>{filtered.length.toLocaleString('es-CL')} registros filtrados</span></div>
           <p>Exporte los atributos de la selección actual. Los archivos no incluyen geometrías.</p>
           <div className='insar-export-actions'>
