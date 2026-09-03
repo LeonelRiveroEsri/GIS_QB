@@ -1,0 +1,18 @@
+{
+  "widgetTitle": "Asistente GIS Teck QB - DTMS",
+  "welcomeMessage": "Consulta información del mapa y prepara análisis GIS para el asistente de Teck QB - DTMS.",
+  "includeMapContext": true,
+  "maxContextLayers": 20,
+  "copilotStudio": {
+    "enabled": false,
+    "endpoint": "https://04ab42a0aa15e4028f705db8155b64.07.environment.api.powerplatform.com/copilotstudio/dataverse-backed/authenticated/bots/cr341_asistenteGisTeck/conversations?api-version=2022-03-01-preview",
+    "timeoutMs": 30000
+  },
+  "auth": {
+    "enabled": false,
+    "tenantId": "",
+    "clientId": "",
+    "redirectUri": "",
+    "scopes": []
+  }
+}

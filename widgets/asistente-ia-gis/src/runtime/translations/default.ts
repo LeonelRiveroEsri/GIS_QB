@@ -1,0 +1,23 @@
+export default {
+  _widgetLabel: 'Asistente GIS Teck QB - DTMS',
+  mapConnected: 'Mapa conectado',
+  mapNotConnected: 'Sin mapa conectado',
+  totalLayers: 'capas totales',
+  visibleLayers: 'capas visibles',
+  visibleLayerTitles: 'Capas visibles',
+  noVisibleLayers: 'No hay capas visibles.',
+  promptLabel: 'Mensaje para Asistente GIS Teck QB - DTMS',
+  placeholder: 'Escribe una consulta sobre el mapa o sus datos…',
+  prepare: 'Preparar consulta',
+  sending: 'Preparando respuesta…',
+  cancel: 'Cancelar',
+  clear: 'Nueva conversación',
+  agentTitle: 'Asistente GIS Teck QB - DTMS',
+  pendingTitle: 'Integración de IA pendiente',
+  pendingMessage: 'La consulta quedó preparada. La conexión con Asistente GIS Teck QB - DTMS todavía está pendiente.',
+  emptyPrompt: 'Escribe una consulta antes de continuar.',
+  context: 'Contexto GIS',
+  proposedActions: 'Acciones propuestas',
+  availableArtifacts: 'Artifacts disponibles',
+  artifactNotEnabled: 'Apertura de artifacts todavía no habilitada.'
+}
