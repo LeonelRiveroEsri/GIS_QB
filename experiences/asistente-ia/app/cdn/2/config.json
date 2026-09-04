@@ -92,31 +92,11 @@
           "canNavigation": true,
           "canLayers": true
         },
-        "isUseCustomMapState": true,
-        "initialMapState": {
-          "viewPoint": {
-            "rotation": 0,
-            "scale": 4622324.434309,
-            "targetGeometry": {
-              "spatialReference": {
-                "wkid": 102100
-              },
-              "x": -7814568.868897799,
-              "y": -2818020.2643597387
-            }
-          },
-          "extent": {
-            "spatialReference": {
-              "wkid": 102100
-            },
-            "xmin": -8049994.9160160795,
-            "ymin": -3059561.2737408313,
-            "xmax": -7579142.821779519,
-            "ymax": -2576479.254978646
-          },
-          "rotation": 0,
-          "viewType": "2d"
-        }
+        "isUseCustomMapState": false,
+        "initialMapState": null,
+        "initialMapDataSourceID": "dataSource_1",
+        "scaleRange": null,
+        "customLODs": null
       },
       "id": "widget_1",
       "layouts": {
@@ -190,7 +170,13 @@
             }
           }
         }
-      }
+      },
+      "useDataSources": [
+        {
+          "dataSourceId": "dataSource_1",
+          "mainDataSourceId": "dataSource_1"
+        }
+      ]
     },
     "widget_2": {
       "uri": "widgets/asistente-ia-gis/",
@@ -235,7 +221,7 @@
     "type": "Web Experience",
     "thumbnail": null
   },
-  "timestamp": 1788455568330,
+  "timestamp": 1788533702593,
   "sharedThemeVariables": {
     "header": {
       "bg": "#001040",
@@ -245,11 +231,19 @@
     "button": {}
   },
   "mainLocale": "es-mx",
-  "dataSources": {},
+  "dataSources": {
+    "dataSource_1": {
+      "id": "dataSource_1",
+      "type": "WEB_MAP",
+      "sourceLabel": "asistente-ia",
+      "itemId": "9d40069e875a46cdb0d82f59f9c67877",
+      "portalUrl": "https://Teck-QB2.maps.arcgis.com"
+    }
+  },
   "pageStructure": [
     {
       "page_0": []
     }
   ],
-  "publishTimestamp": 1788455571160
+  "publishTimestamp": 1788533704128
 }
