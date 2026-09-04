@@ -1,0 +1,23 @@
+export default {
+  selectMap: 'Mapa de Experience Builder',
+  appearance: 'Contenido',
+  widgetTitle: 'Título del widget',
+  welcomeMessage: 'Mensaje de bienvenida',
+  behavior: 'Contexto GIS',
+  includeMapContext: 'Incluir contexto del mapa',
+  includeMapContextHelp: 'Prepara el título y las capas visibles para una futura consulta de IA.',
+  maxContextLayers: 'Máximo de capas en el contexto',
+  agentConnection: 'Conexión del asistente',
+  enableCopilotStudio: 'Usar Copilot Studio',
+  enableCopilotStudioHelp: 'Al activarlo se requerirá autenticación delegada de Microsoft Entra. Sin ella, no se enviará ninguna solicitud.',
+  copilotEndpoint: 'Endpoint de Copilot Studio',
+  timeoutMs: 'Tiempo máximo (ms)',
+  entraAuthentication: 'Autenticación Microsoft Entra',
+  enableEntraAuth: 'Habilitar autenticación Microsoft Entra',
+  entraAuthHelp: 'Permanece inactiva hasta configurar todos los valores autorizados. No utiliza Client Secret.',
+  tenantId: 'Tenant ID',
+  clientId: 'Client ID',
+  redirectUri: 'Redirect URI de la SPA',
+  scopes: 'Scopes de Power Platform',
+  scopesHelp: 'Un scope por línea. Debe ser confirmado por TDS antes de activar la conexión.'
+}
