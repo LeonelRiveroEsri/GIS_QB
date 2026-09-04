@@ -24,6 +24,7 @@ const loadTs = (file) => {
 const widgetRoot = path.resolve(__dirname, '..')
 const { authorizeAgentAction } = loadTs(path.join(widgetRoot, 'src/runtime/actions/agent-action-authorizer.ts'))
 const { handleAuthorizedAgentAction } = loadTs(path.join(widgetRoot, 'src/runtime/actions/authorized-agent-action-handler.ts'))
+const { getApprovedImageryLayer } = loadTs(path.join(widgetRoot, 'src/runtime/actions/approved-imagery-layers.ts'))
 const featureLayer = { id: 'layer-1', type: 'feature' }
 const groupLayer = { id: 'group-1', type: 'group', isGroupLayer: true }
 const basemapLayer = {
@@ -40,6 +41,7 @@ const visibility = (layerId) => ({ id: 'visibility', title: 'Visibilidad', type:
 const approvedLoad = { id: 'load', title: 'Cargar TMF', type: 'load_portal_item_layer', portalItemId: '096c67f44e6d499ab1f016fde6893592', layerId: 'asistente-imagen-tmf' }
 
 assert.equal(authorizeAgentAction(zoomExtent, connected).code, 'ACTION_AUTHORIZED') // A
+assert.match(getApprovedImageryLayer('80559637d5f54adb85dc470cf4398aaf', 'asistente-imagen-mina').serviceUrl, /tiledimageservices8\.arcgis\.com/)
 assert.equal(authorizeAgentAction(zoomExtent, { ...connected, mapConnected: false }).code, 'MAP_NOT_CONNECTED') // B
 assert.equal(authorizeAgentAction(zoomExtent, { ...connected, viewAvailable: false }).code, 'MAP_VIEW_UNAVAILABLE') // C
 assert.equal(authorizeAgentAction(zoomLayer('layer-1'), connected).authorized, true) // D

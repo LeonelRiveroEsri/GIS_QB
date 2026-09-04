@@ -18,6 +18,7 @@ import ChartWorkspace from './charts/chart-workspace'
 import { applyChartArtifactVersion, getLatestChartArtifact, INITIAL_CHART_WORKSPACE_STATE } from './charts/chart-workspace-state'
 import { applyChartPresentationPatch, type ChartPresentationPatch } from './charts/chart-presentation-state'
 import type { ChartViewportState } from './charts/chart-viewport-state'
+import { getApprovedImageryLayer } from './actions/approved-imagery-layers'
 
 type ActiveView = 'chat' | 'charts'
 
@@ -129,8 +130,10 @@ const Widget = (props: AllWidgetProps<IMConfig>) => {
     }, {
       view,
       createPortalItemLayer: async ({ portalItemId, id, title, opacity }) => {
+        const approvedLayer = getApprovedImageryLayer(portalItemId, id)
+        if (!approvedLayer) throw new Error('Imagery layer is not approved.')
         const [ImageryTileLayer] = await loadArcGISJSAPIModules(['esri/layers/ImageryTileLayer']) as [any]
-        return new ImageryTileLayer({ portalItem: { id: portalItemId }, id, title, opacity, visible: true })
+        return new ImageryTileLayer({ url: approvedLayer.serviceUrl, id, title: approvedLayer.title || title, opacity, visible: true })
       }
     })
     setLocalNotice(`${actionResult.code}: ${actionResult.message}`)
